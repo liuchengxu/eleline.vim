@@ -71,29 +71,26 @@ function! S_full_path()
 endfunction
 
 function! S_ale_error()
-    if !exists('g:loaded_ale')
-        return ''
-    endif
-    if exists('*ALEGetError')
-        return !empty(ALEGetError())?ALEGetError():''
+    if exists('g:loaded_ale')
+        if exists('*ALEGetError')
+            return !empty(ALEGetError())?ALEGetError():''
+        endif
     endif
 endfunction
 
 function! S_ale_warning()
-    if !exists('g:loaded_ale')
-        return ''
-    endif
-    if exists('*ALEGetWarning')
-        return !empty(ALEGetWarning())?ALEGetWarning():''
+    if exists('g:loaded_ale')
+        if exists('*ALEGetWarning')
+            return !empty(ALEGetWarning())?ALEGetWarning():''
+        endif
     endif
 endfunction
 
 function! S_fugitive()
-    if !exists('g:loaded_fugitive')
-        return ''
+    if exists('g:loaded_fugitive')
+        let l:head = fugitive#head()
+        return empty(l:head) ? '' : ' ⎇ '.l:head . ' '
     endif
-    let l:head = fugitive#head()
-    return empty(l:head) ? '' : ' ⎇ '.l:head . ' '
 endfunction
 
 function! S_gitgutter()

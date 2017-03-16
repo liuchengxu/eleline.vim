@@ -96,10 +96,10 @@ endfunction
 function! S_gitgutter()
     if exists('b:gitgutter_summary')
         let l:summary = get(b:, 'gitgutter_summary')
-        if l:summary[0] == 0 && l:summary[1] == 0 && l:summary[2] == 0
-            return ''
+        if l:summary[0] != 0 || l:summary[1] != 0 || l:summary[2] != 0
+            return ' +'.l:summary[0].' ~'.l:summary[1].' -'.l:summary[2].' '
         endif
-        return ' +'.l:summary[0].' ~'.l:summary[1].' -'.l:summary[2].' '
+        return ''
     endif
 endfunction
 

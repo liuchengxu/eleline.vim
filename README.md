@@ -12,3 +12,5 @@ This plugin can be installed with a varity of plugin managers, e.g., [vim-plug](
 Plug 'liuchengxu/eleline.vim'
 ```
 
+It's encouraged to fork [eleline.vim](https://github.com/liuchengxu/eleline.vim) to make your costomized vim statusline.
+

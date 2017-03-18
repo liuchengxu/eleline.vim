@@ -3,6 +3,12 @@ An **ele**gant status **line** for vim, extracted from [space-vim](https://githu
 
 ![screenshot](https://github.com/liuchengxu/eleline.vim/blob/screenshots/screenshot.png?raw=true)
 
+Supported plugins:
+
+- [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
+- [vim-fugitive](https://github.com/tpope/vim-fugitive)
+- [ale](https://github.com/w0rp/ale)
+
 ## Installation
 
 This plugin can be installed with a varity of plugin managers, e.g., [vim-plug](https://github.com/junegunn/vim-plug):

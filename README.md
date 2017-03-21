@@ -3,6 +3,12 @@ An **ele**gant status **line** for vim, extracted from [space-vim](https://githu
 
 ![screenshot](https://github.com/liuchengxu/eleline.vim/blob/screenshots/screenshot.png?raw=true)
 
+Supported plugins:
+
+- [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
+- [vim-fugitive](https://github.com/tpope/vim-fugitive)
+- [ale](https://github.com/w0rp/ale)
+
 ## Installation
 
 This plugin can be installed with a varity of plugin managers, e.g., [vim-plug](https://github.com/junegunn/vim-plug):
@@ -12,5 +18,5 @@ This plugin can be installed with a varity of plugin managers, e.g., [vim-plug](
 Plug 'liuchengxu/eleline.vim'
 ```
 
-It's encouraged to fork [eleline.vim](https://github.com/liuchengxu/eleline.vim) to make your costomized vim statusline.
+It's encouraged to fork [eleline.vim](https://github.com/liuchengxu/eleline.vim) to make your own custom vim statusline.
 

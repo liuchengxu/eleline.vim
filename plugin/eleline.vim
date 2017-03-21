@@ -99,8 +99,8 @@ function! S_gitgutter()
         if l:summary[0] != 0 || l:summary[1] != 0 || l:summary[2] != 0
             return ' +'.l:summary[0].' ~'.l:summary[1].' -'.l:summary[2].' '
         endif
-        return ''
     endif
+    return ''
 endfunction
 
 function! MyStatusLine()

@@ -76,6 +76,7 @@ function! S_ale_error()
             return !empty(ALEGetError())?ALEGetError():''
         endif
     endif
+    return ''
 endfunction
 
 function! S_ale_warning()
@@ -84,6 +85,7 @@ function! S_ale_warning()
             return !empty(ALEGetWarning())?ALEGetWarning():''
         endif
     endif
+    return ''
 endfunction
 
 function! S_fugitive()
@@ -91,6 +93,7 @@ function! S_fugitive()
         let l:head = fugitive#head()
         return empty(l:head) ? '' : ' ⎇ '.l:head . ' '
     endif
+    return ''
 endfunction
 
 function! S_gitgutter()

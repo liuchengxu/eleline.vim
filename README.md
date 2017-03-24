@@ -9,6 +9,8 @@ Supported plugins:
 - [vim-fugitive](https://github.com/tpope/vim-fugitive)
 - [ale](https://github.com/w0rp/ale)
 
+    You need to add [two functions](https://github.com/liuchengxu/space-vim/blob/master/layers/%2Bcheckers/syntax-checking/config.vim#L23-L50) `ALEGetError()` and `ALEGetWarning()` to support ale.
+
 ## Installation
 
 This plugin can be installed with a varity of plugin managers, e.g., [vim-plug](https://github.com/junegunn/vim-plug):

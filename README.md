@@ -3,6 +3,8 @@ An **ele**gant status **line** for vim, extracted from [space-vim](https://githu
 
 ![screenshot](https://github.com/liuchengxu/eleline.vim/blob/screenshots/screenshot.png?raw=true)
 
+Don't forget to `set laststatus=2` to always display statusline in vim.
+
 Supported plugins:
 
 - [vim-gitgutter](https://github.com/airblade/vim-gitgutter)

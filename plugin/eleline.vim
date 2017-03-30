@@ -109,7 +109,7 @@ endfunction
 function! MyStatusLine()
 
     if s:gui
-        let l:buf_num = '%1* [B-%n] [W-%{winnr()}] %*'
+        let l:buf_num = '%1* [B-%n] ❖ %{winnr()} %*'
     else
         let l:buf_num = '%1* %{S_buf_num()} ❖ %{winnr()} %*'
     endif

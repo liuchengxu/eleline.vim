@@ -106,6 +106,10 @@ function! S_gitgutter()
     return ''
 endfunction
 
+function! S_time()
+    return strftime('%Y-%m-%d %H:%M:%S')
+endfunction
+
 function! MyStatusLine()
 
     if s:gui
@@ -124,10 +128,11 @@ function! MyStatusLine()
     let l:ff = '%8* %{&ff} |'
     let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM\":\"\")}"
     let l:pos = '%l:%c%V %*'
+    let l:time = ' %{S_time()} '
     let l:pct = '%9* %P %*'
 
     return l:buf_num.l:tot.'%<'.l:fs.l:fp.l:git.l:paste.l:ale_e.l:ale_w.
-                \   '%='.l:m_r_f.l:ff.l:enc.l:pos.l:pct
+                \   '%='.l:time.l:m_r_f.l:ff.l:enc.l:pos.l:pct
 endfunction
 " See the statusline highlightings in s:post_user_config() of core/autoload/core_config.vim
 

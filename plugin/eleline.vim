@@ -143,7 +143,7 @@ function! S_statusline_hi()
     hi ale_error   cterm=None ctermfg=197 ctermbg=237 gui=None guifg=#CC0033 guibg=#3a3a3a
     hi ale_warning cterm=None ctermfg=214 ctermbg=237 gui=None guifg=#FFFF66 guibg=#3a3a3a
 
-    hi User1 cterm=bold ctermfg=232 ctermbg=179 gui=Bold guifg=#333300 guibg=#FFBF48
+    hi User1 cterm=bold ctermfg=232 ctermbg=178 gui=Bold guifg=#333300 guibg=#FFBF48
     hi User2 cterm=None ctermfg=214 ctermbg=243 gui=None guifg=#FFBB7D guibg=#666666
     hi User3 cterm=None ctermfg=251 ctermbg=241 gui=None guifg=#c6c6c6 guibg=#585858
     hi User4 cterm=Bold ctermfg=171 ctermbg=239 gui=Bold guifg=#d75fd7 guibg=#4e4e4e

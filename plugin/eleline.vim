@@ -144,11 +144,11 @@ function! S_statusline_hi()
     hi ale_warning cterm=None ctermfg=214 ctermbg=237 gui=None guifg=#FFFF66 guibg=#3a3a3a
 
     hi User1 cterm=bold ctermfg=232 ctermbg=178 gui=Bold guifg=#333300 guibg=#FFBF48
-    hi User2 cterm=None ctermfg=214 ctermbg=243 gui=None guifg=#FFBB7D guibg=#666666
+    hi User2 cterm=None ctermfg=221 ctermbg=243 gui=None guifg=#FFBB7D guibg=#666666
     hi User3 cterm=None ctermfg=251 ctermbg=241 gui=None guifg=#c6c6c6 guibg=#585858
     hi User4 cterm=Bold ctermfg=171 ctermbg=239 gui=Bold guifg=#d75fd7 guibg=#4e4e4e
     hi User5 cterm=None ctermfg=208 ctermbg=238 gui=None guifg=#ff8700 guibg=#3a3a3a
-    hi User6 cterm=Bold ctermfg=178 ctermbg=237 gui=Bold guifg=#FFE920 guibg=#444444
+    hi User6 cterm=Bold ctermfg=184 ctermbg=237 gui=Bold guifg=#FFE920 guibg=#444444
     hi User7 cterm=None ctermfg=250 ctermbg=238 gui=None guifg=#bcbcbc guibg=#444444
     hi User8 cterm=None ctermfg=249 ctermbg=239 gui=None guifg=#b2b2b2 guibg=#4e4e4e
     hi User9 cterm=None ctermfg=249 ctermbg=241 gui=None guifg=#b2b2b2 guibg=#606060

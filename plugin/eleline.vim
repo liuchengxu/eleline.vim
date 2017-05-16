@@ -116,10 +116,10 @@ function! MyStatusLine()
     let l:tot = '%2*[TOT:%{S_buf_total_num()}]%*'
     let l:fs = '%3* %{S_file_size(@%)} %*'
     let l:fp = '%4* %{S_full_path()} %*'
+    let l:git = '%6*%{S_fugitive()}%{S_gitgutter()}%*'
     let l:paste = "%#paste#%{&paste?'⎈ paste ':''}%*"
     let l:ale_e = '%#ale_error#%{S_ale_error()}%*'
     let l:ale_w = '%#ale_warning#%{S_ale_warning()}%*'
-    let l:git = '%6*%{S_fugitive()}%{S_gitgutter()}%*'
     let l:m_r_f = '%7* %m%r%y %*'
     let l:ff = '%8* %{&ff} |'
     let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM\":\"\")}"
@@ -136,22 +136,63 @@ endfunction
 " context of the window that the statusline belongs to.
 set statusline=%!MyStatusLine()
 
+let s:colors = {
+            \   140 : '#af87d7', 149 : '#99cc66', 171 : '#d75fd7',
+            \   178 : '#ffbb7d', 184 : '#ffe920', 208 : '#ff8700',
+            \   232 : '#333300', 197 : '#cc0033', 214 : '#ffff66',
+            \
+            \   235 : '#262626', 236 : '#303030', 237 : '#3a3a3a',
+            \   238 : '#444444', 239 : '#4e4e4e', 240 : '#585858',
+            \   241 : '#606060', 242 : '#666666', 243 : '#767676',
+            \   244 : '#808080', 245 : '#8a8a8a', 246 : '#949494',
+            \   247 : '#9e9e9e', 248 : '#a8a8a8', 249 : '#b2b2b2',
+            \   250 : '#bcbcbc', 251 : '#c6c6c6', 252 : '#d0d0d0',
+            \   253 : '#dadada', 254 : '#e4e4e4', 255 : '#eeeeee',
+            \ }
+
+function! s:hi(group, fg, bg, ...)
+    execute printf('hi %s ctermfg=%d guifg=%s ctermbg=%d guibg=%s',
+                \   a:group, a:fg, s:colors[a:fg], a:bg, s:colors[a:bg])
+    if a:0 == 1
+        execute printf('hi %s cterm=%s gui=%s', a:group, a:1, a:1)
+    endif
+endfunction
+
 function! S_statusline_hi()
-    hi StatusLine   term=bold,reverse ctermfg=140 ctermbg=237 guifg=#af87d7 guibg=#3a3a3a
+    if !exists('g:eleline_background')
+        let l:normal_bg = synIDattr(hlID('Normal'), 'bg', 'cterm')
 
-    hi paste       cterm=bold ctermfg=149 ctermbg=239 gui=bold guifg=#99CC66 guibg=#3a3a3a
-    hi ale_error   cterm=None ctermfg=197 ctermbg=237 gui=None guifg=#CC0033 guibg=#3a3a3a
-    hi ale_warning cterm=None ctermfg=214 ctermbg=237 gui=None guifg=#FFFF66 guibg=#3a3a3a
+        if l:normal_bg >= 233 && l:normal_bg <= 243
+            let l:bg = l:normal_bg
+        else
+            let l:bg = 235
+        endif
+    else
+        let l:bg = g:eleline_background
+    endif
 
-    hi User1 cterm=bold ctermfg=232 ctermbg=178 gui=Bold guifg=#333300 guibg=#FFBF48
-    hi User2 cterm=None ctermfg=221 ctermbg=243 gui=None guifg=#FFBB7D guibg=#666666
-    hi User3 cterm=None ctermfg=251 ctermbg=241 gui=None guifg=#c6c6c6 guibg=#585858
-    hi User4 cterm=Bold ctermfg=171 ctermbg=239 gui=Bold guifg=#d75fd7 guibg=#4e4e4e
-    hi User5 cterm=None ctermfg=208 ctermbg=238 gui=None guifg=#ff8700 guibg=#3a3a3a
-    hi User6 cterm=Bold ctermfg=184 ctermbg=237 gui=Bold guifg=#FFE920 guibg=#444444
-    hi User7 cterm=None ctermfg=250 ctermbg=238 gui=None guifg=#bcbcbc guibg=#444444
-    hi User8 cterm=None ctermfg=249 ctermbg=239 gui=None guifg=#b2b2b2 guibg=#4e4e4e
-    hi User9 cterm=None ctermfg=249 ctermbg=241 gui=None guifg=#b2b2b2 guibg=#606060
+    let l:gui = has('termguicolors') && &termguicolors
+    " Don't change in gui mode
+    if l:gui
+        let l:bg = 235
+    endif
+
+    call s:hi('User1'      , 232 , 178  )
+    call s:hi('User2'      , 178 , l:bg+8 )
+    call s:hi('User3'      , 250 , l:bg+6 )
+    call s:hi('User4'      , 171 , l:bg+4 , 'bold' )
+    call s:hi('User5'      , 208 , l:bg+3 )
+    call s:hi('User6'      , 184 , l:bg+2 , 'bold' )
+
+    call s:hi('paste'       , 149 , l:bg+4)
+    call s:hi('ale_error'   , 197 , l:bg+2)
+    call s:hi('ale_warning' , 214 , l:bg+2)
+
+    call s:hi('StatusLine' , 140 , l:bg+2 )
+
+    call s:hi('User7'      , 249 , l:bg+3 )
+    call s:hi('User8'      , 250 , l:bg+4 )
+    call s:hi('User9'      , 251 , l:bg+5 )
 endfunction
 
 " User-defined highlightings shoule be put after colorscheme command.

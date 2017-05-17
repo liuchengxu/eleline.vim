@@ -158,41 +158,40 @@ function! s:hi(group, fg, bg, ...)
     endif
 endfunction
 
-function! S_statusline_hi()
-    if !exists('g:eleline_background')
-        let l:normal_bg = synIDattr(hlID('Normal'), 'bg', 'cterm')
+if !exists('g:eleline_background')
+    let s:normal_bg = synIDattr(hlID('Normal'), 'bg', 'cterm')
 
-        if l:normal_bg >= 233 && l:normal_bg <= 243
-            let l:bg = l:normal_bg
-        else
-            let l:bg = 235
-        endif
+    if s:normal_bg >= 233 && s:normal_bg <= 243
+        let s:bg = s:normal_bg
     else
-        let l:bg = g:eleline_background
+        let s:bg = 235
     endif
+else
+    let s:bg = g:eleline_background
+endif
 
-    let l:gui = has('termguicolors') && &termguicolors
-    " Don't change in gui mode
-    if l:gui
-        let l:bg = 235
-    endif
+" Don't change in gui mode
+if has('termguicolors') && &termguicolors
+    let s:bg = 235
+endif
 
+function! S_statusline_hi()
     call s:hi('User1'      , 232 , 178  )
-    call s:hi('User2'      , 178 , l:bg+8 )
-    call s:hi('User3'      , 250 , l:bg+6 )
-    call s:hi('User4'      , 171 , l:bg+4 , 'bold' )
-    call s:hi('User5'      , 208 , l:bg+3 )
-    call s:hi('User6'      , 184 , l:bg+2 , 'bold' )
+    call s:hi('User2'      , 178 , s:bg+8 )
+    call s:hi('User3'      , 250 , s:bg+6 )
+    call s:hi('User4'      , 171 , s:bg+4 , 'bold' )
+    call s:hi('User5'      , 208 , s:bg+3 )
+    call s:hi('User6'      , 184 , s:bg+2 , 'bold' )
 
-    call s:hi('paste'       , 149 , l:bg+4)
-    call s:hi('ale_error'   , 197 , l:bg+2)
-    call s:hi('ale_warning' , 214 , l:bg+2)
+    call s:hi('paste'       , 149 , s:bg+4)
+    call s:hi('ale_error'   , 197 , s:bg+2)
+    call s:hi('ale_warning' , 214 , s:bg+2)
 
-    call s:hi('StatusLine' , 140 , l:bg+2 )
+    call s:hi('StatusLine' , 140 , s:bg+2 )
 
-    call s:hi('User7'      , 249 , l:bg+3 )
-    call s:hi('User8'      , 250 , l:bg+4 )
-    call s:hi('User9'      , 251 , l:bg+5 )
+    call s:hi('User7'      , 249 , s:bg+3 )
+    call s:hi('User8'      , 250 , s:bg+4 )
+    call s:hi('User9'      , 251 , s:bg+5 )
 endfunction
 
 " User-defined highlightings shoule be put after colorscheme command.

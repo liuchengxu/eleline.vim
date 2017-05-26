@@ -121,13 +121,13 @@ function! MyStatusLine()
     let l:ale_e = '%#ale_error#%{S_ale_error()}%*'
     let l:ale_w = '%#ale_warning#%{S_ale_warning()}%*'
     let l:m_r_f = '%7* %m%r%y %*'
-    let l:ff = '%8* %{&ff} |'
+    let l:pos = '%8* %l:%c%V |'
     let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM\":\"\")}"
-    let l:pos = '%l:%c%V %*'
+    let l:ff = '%{&ff} %*'
     let l:pct = '%9* %P %*'
 
     return l:buf_num.l:tot.'%<'.l:fs.l:fp.l:git.l:paste.l:ale_e.l:ale_w.
-                \   '%='.l:m_r_f.l:ff.l:enc.l:pos.l:pct
+                \   '%='.l:m_r_f.l:pos.l:enc.l:ff.l:pct
 endfunction
 " See the statusline highlightings in s:post_user_config() of core/autoload/core_config.vim
 

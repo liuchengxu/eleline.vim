@@ -37,7 +37,7 @@ let s:gui = has('gui_running')
 
 function! S_buf_num()
     let l:circled_num_list = ['① ', '② ', '③ ', '④ ', '⑤ ', '⑥ ', '⑦ ', '⑧ ', '⑨ ', '⑩ ',
-                \             '⑪ ', '⑫ ', '⑬ ', '⑭ ', '⑮ ', '⑯ ', '⑰ ', '⑱ ', '⑲ ', '⑳ ']
+          \                   '⑪ ', '⑫ ', '⑬ ', '⑭ ', '⑮ ', '⑯ ', '⑰ ', '⑱ ', '⑲ ', '⑳ ']
 
     return bufnr('%') > 20 ? bufnr('%') : l:circled_num_list[bufnr('%')-1]
 endfunction
@@ -109,7 +109,7 @@ endfunction
 function! MyStatusLine()
 
     if s:gui
-        let l:buf_num = '%1* [B-%n] ❖ %{winnr()} %*'
+        let l:buf_num = '%1* %n ❖ %{winnr()} %*'
     else
         let l:buf_num = '%1* %{S_buf_num()} ❖ %{winnr()} %*'
     endif
@@ -197,7 +197,7 @@ endfunction
 " User-defined highlightings shoule be put after colorscheme command.
 call S_statusline_hi()
 
-augroup STATUSLINE
+augroup eleline
     autocmd!
     autocmd ColorScheme * call S_statusline_hi()
 augroup END

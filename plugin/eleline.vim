@@ -1,12 +1,10 @@
-scriptencoding utf-8
-
 " =============================================================================
 " Filename: eleline.vim
 " Author: Liu-Cheng Xu
 " URL: https://github.com/liuchengxu/eleline.vim
 " License: MIT License
 " =============================================================================
-
+scriptencoding utf-8
 if exists('g:loaded_eleline') || v:version < 700
   finish
 endif
@@ -14,6 +12,77 @@ let g:loaded_eleline = 1
 
 let s:save_cpo = &cpoptions
 set cpoptions&vim
+
+function! s:circled_num(num)
+  return nr2char(9311 + a:num)
+endfunction
+
+function! S_buf_num()
+  let l:nr = bufnr('%')
+  return l:nr > 20 ? l:nr : s:circled_num(l:nr).' '
+endfunction
+
+function! S_buf_total_num()
+  return len(filter(range(1, bufnr('$')), 'buflisted(v:val)'))
+endfunction
+
+function! S_file_size(f)
+  let l:size = getfsize(expand(a:f))
+  if l:size == 0 || l:size == -1 || l:size == -2
+    return ''
+  endif
+  if l:size < 1024
+    return l:size.' bytes'
+  elseif l:size < 1024*1024
+    return printf('%.1f', l:size/1024.0).'k'
+  elseif l:size < 1024*1024*1024
+    return printf('%.1f', l:size/1024.0/1024.0) . 'm'
+  else
+    return printf('%.1f', l:size/1024.0/1024.0/1024.0) . 'g'
+  endif
+endfunction
+
+function! S_full_path()
+  if &filetype ==# 'startify'
+    return ''
+  else
+    return expand('%:p:t')
+  endif
+endfunction
+
+function! S_ale_error()
+  if exists('g:loaded_ale')
+    let l:counts = ale#statusline#Count(bufnr(''))
+      return l:counts[0] == 0 ? '' : '•'.l:counts[0]
+  endif
+  return ''
+endfunction
+
+function! S_ale_warning()
+  if exists('g:loaded_ale')
+    let l:counts = ale#statusline#Count(bufnr(''))
+    return l:counts[1] == 0 ? '' : '•'.l:counts[1]
+  endif
+  return ''
+endfunction
+
+function! S_fugitive()
+  if exists('g:loaded_fugitive')
+    let l:head = fugitive#head()
+    return empty(l:head) ? '' : ' ⎇ '.l:head . ' '
+  endif
+  return ''
+endfunction
+
+function! S_gitgutter()
+  if exists('b:gitgutter_summary')
+    let l:summary = get(b:, 'gitgutter_summary')
+    if l:summary[0] != 0 || l:summary[1] != 0 || l:summary[2] != 0
+      return ' +'.l:summary[0].' ~'.l:summary[1].' -'.l:summary[2].' '
+    endif
+  endif
+  return ''
+endfunction
 
 " The decoration of statusline was originally stealed from
 " https://github.com/junegunn/dotfiles/blob/master/vimrc.
@@ -33,103 +102,28 @@ set cpoptions&vim
 " %P Percentage
 " %#HighlightGroup#
 
-let s:gui = has('gui_running')
-
-function! S_buf_num()
-    let l:circled_num_list = ['① ', '② ', '③ ', '④ ', '⑤ ', '⑥ ', '⑦ ', '⑧ ', '⑨ ', '⑩ ',
-          \                   '⑪ ', '⑫ ', '⑬ ', '⑭ ', '⑮ ', '⑯ ', '⑰ ', '⑱ ', '⑲ ', '⑳ ']
-
-    return bufnr('%') > 20 ? bufnr('%') : l:circled_num_list[bufnr('%')-1]
-endfunction
-
-function! S_buf_total_num()
-    return len(filter(range(1, bufnr('$')), 'buflisted(v:val)'))
-endfunction
-
-function! S_file_size(f)
-    let l:size = getfsize(expand(a:f))
-    if l:size == 0 || l:size == -1 || l:size == -2
-        return ''
-    endif
-    if l:size < 1024
-        return l:size.' bytes'
-    elseif l:size < 1024*1024
-        return printf('%.1f', l:size/1024.0).'k'
-    elseif l:size < 1024*1024*1024
-        return printf('%.1f', l:size/1024.0/1024.0) . 'm'
-    else
-        return printf('%.1f', l:size/1024.0/1024.0/1024.0) . 'g'
-    endif
-endfunction
-
-function! S_full_path()
-    if &filetype ==# 'startify'
-        return ''
-    else
-        return expand('%:p:t')
-    endif
-endfunction
-
-function! S_ale_error()
-    if exists('g:loaded_ale')
-        if exists('*ALEGetError')
-            return !empty(ALEGetError())?ALEGetError():''
-        endif
-    endif
-    return ''
-endfunction
-
-function! S_ale_warning()
-    if exists('g:loaded_ale')
-        if exists('*ALEGetWarning')
-            return !empty(ALEGetWarning())?ALEGetWarning():''
-        endif
-    endif
-    return ''
-endfunction
-
-function! S_fugitive()
-    if exists('g:loaded_fugitive')
-        let l:head = fugitive#head()
-        return empty(l:head) ? '' : ' ⎇ '.l:head . ' '
-    endif
-    return ''
-endfunction
-
-function! S_gitgutter()
-    if exists('b:gitgutter_summary')
-        let l:summary = get(b:, 'gitgutter_summary')
-        if l:summary[0] != 0 || l:summary[1] != 0 || l:summary[2] != 0
-            return ' +'.l:summary[0].' ~'.l:summary[1].' -'.l:summary[2].' '
-        endif
-    endif
-    return ''
-endfunction
-
 function! MyStatusLine()
+  if has('gui_running')
+      let l:buf_num = '%1* %n ❖ %{winnr()} %*'
+  else
+      let l:buf_num = '%1* %{S_buf_num()} ❖ %{winnr()} %*'
+  endif
+  let l:tot = '%2*[TOT:%{S_buf_total_num()}]%*'
+  let l:fs = '%3* %{S_file_size(@%)} %*'
+  let l:fp = '%4* %{S_full_path()} %*'
+  let l:git = '%6*%{S_fugitive()}%{S_gitgutter()}%*'
+  let l:paste = "%#paste#%{&paste?'⎈ paste ':''}%*"
+  let l:ale_e = '%#ale_error#%{S_ale_error()}%*'
+  let l:ale_w = '%#ale_warning#%{S_ale_warning()}%*'
+  let l:m_r_f = '%7* %m%r%y %*'
+  let l:pos = '%8* %l:%c%V |'
+  let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM\":\"\")}"
+  let l:ff = '%{&ff} %*'
+  let l:pct = '%9* %P %*'
 
-    if s:gui
-        let l:buf_num = '%1* %n ❖ %{winnr()} %*'
-    else
-        let l:buf_num = '%1* %{S_buf_num()} ❖ %{winnr()} %*'
-    endif
-    let l:tot = '%2*[TOT:%{S_buf_total_num()}]%*'
-    let l:fs = '%3* %{S_file_size(@%)} %*'
-    let l:fp = '%4* %{S_full_path()} %*'
-    let l:git = '%6*%{S_fugitive()}%{S_gitgutter()}%*'
-    let l:paste = "%#paste#%{&paste?'⎈ paste ':''}%*"
-    let l:ale_e = '%#ale_error#%{S_ale_error()}%*'
-    let l:ale_w = '%#ale_warning#%{S_ale_warning()}%*'
-    let l:m_r_f = '%7* %m%r%y %*'
-    let l:pos = '%8* %l:%c%V |'
-    let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM\":\"\")}"
-    let l:ff = '%{&ff} %*'
-    let l:pct = '%9* %P %*'
-
-    return l:buf_num.l:tot.'%<'.l:fs.l:fp.l:git.l:paste.l:ale_e.l:ale_w.
-                \   '%='.l:m_r_f.l:pos.l:enc.l:ff.l:pct
+  return l:buf_num.l:tot.'%<'.l:fs.l:fp.l:git.l:paste.l:ale_e.l:ale_w.
+        \ '%='.l:m_r_f.l:pos.l:enc.l:ff.l:pct
 endfunction
-" See the statusline highlightings in s:post_user_config() of core/autoload/core_config.vim
 
 " Note that the "%!" expression is evaluated in the context of the
 " current window and buffer, while %{} items are evaluated in the
@@ -151,55 +145,54 @@ let s:colors = {
             \ }
 
 function! s:hi(group, fg, bg, ...)
-    execute printf('hi %s ctermfg=%d guifg=%s ctermbg=%d guibg=%s',
-                \   a:group, a:fg, s:colors[a:fg], a:bg, s:colors[a:bg])
-    if a:0 == 1
-        execute printf('hi %s cterm=%s gui=%s', a:group, a:1, a:1)
-    endif
+  execute printf('hi %s ctermfg=%d guifg=%s ctermbg=%d guibg=%s',
+                \ a:group, a:fg, s:colors[a:fg], a:bg, s:colors[a:bg])
+  if a:0 == 1
+    execute printf('hi %s cterm=%s gui=%s', a:group, a:1, a:1)
+  endif
 endfunction
 
 if !exists('g:eleline_background')
-    let s:normal_bg = synIDattr(hlID('Normal'), 'bg', 'cterm')
-
-    if s:normal_bg >= 233 && s:normal_bg <= 243
-        let s:bg = s:normal_bg
-    else
-        let s:bg = 235
-    endif
+  let s:normal_bg = synIDattr(hlID('Normal'), 'bg', 'cterm')
+  if s:normal_bg >= 233 && s:normal_bg <= 243
+    let s:bg = s:normal_bg
+  else
+    let s:bg = 235
+  endif
 else
-    let s:bg = g:eleline_background
+  let s:bg = g:eleline_background
 endif
 
 " Don't change in gui mode
 if has('termguicolors') && &termguicolors
-    let s:bg = 235
+  let s:bg = 235
 endif
 
 function! S_statusline_hi()
-    call s:hi('User1'      , 232 , 178  )
-    call s:hi('User2'      , 178 , s:bg+8 )
-    call s:hi('User3'      , 250 , s:bg+6 )
-    call s:hi('User4'      , 171 , s:bg+4 , 'bold' )
-    call s:hi('User5'      , 208 , s:bg+3 )
-    call s:hi('User6'      , 184 , s:bg+2 , 'bold' )
+  call s:hi('User1'      , 232 , 178  )
+  call s:hi('User2'      , 178 , s:bg+8 )
+  call s:hi('User3'      , 250 , s:bg+6 )
+  call s:hi('User4'      , 171 , s:bg+4 , 'bold' )
+  call s:hi('User5'      , 208 , s:bg+3 )
+  call s:hi('User6'      , 184 , s:bg+2 , 'bold' )
 
-    call s:hi('paste'       , 149 , s:bg+4)
-    call s:hi('ale_error'   , 197 , s:bg+2)
-    call s:hi('ale_warning' , 214 , s:bg+2)
+  call s:hi('paste'       , 149 , s:bg+4)
+  call s:hi('ale_error'   , 197 , s:bg+2)
+  call s:hi('ale_warning' , 214 , s:bg+2)
 
-    call s:hi('StatusLine' , 140 , s:bg+2 )
+  call s:hi('StatusLine' , 140 , s:bg+2 )
 
-    call s:hi('User7'      , 249 , s:bg+3 )
-    call s:hi('User8'      , 250 , s:bg+4 )
-    call s:hi('User9'      , 251 , s:bg+5 )
+  call s:hi('User7'      , 249 , s:bg+3 )
+  call s:hi('User8'      , 250 , s:bg+4 )
+  call s:hi('User9'      , 251 , s:bg+5 )
 endfunction
 
 " User-defined highlightings shoule be put after colorscheme command.
 call S_statusline_hi()
 
 augroup eleline
-    autocmd!
-    autocmd ColorScheme * call S_statusline_hi()
+  autocmd!
+  autocmd ColorScheme * call S_statusline_hi()
 augroup END
 
 let &cpoptions = s:save_cpo

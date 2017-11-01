@@ -75,8 +75,8 @@ function! S_fugitive()
 endfunction
 
 function! S_gitgutter()
-  if exists('b:gitgutter_summary')
-    let l:summary = get(b:, 'gitgutter_summary')
+  if exists('b:gitgutter')
+    let l:summary = b:gitgutter.summary
     if l:summary[0] != 0 || l:summary[1] != 0 || l:summary[2] != 0
       return ' +'.l:summary[0].' ~'.l:summary[1].' -'.l:summary[2].' '
     endif
@@ -111,7 +111,8 @@ function! MyStatusLine()
   let l:tot = '%2*[TOT:%{S_buf_total_num()}]%*'
   let l:fs = '%3* %{S_file_size(@%)} %*'
   let l:fp = '%4* %{S_full_path()} %*'
-  let l:git = '%6*%{S_fugitive()}%{S_gitgutter()}%*'
+  let l:branch = '%6*%{S_fugitive()}%*'
+  let l:gutter = '%{S_gitgutter()}'
   let l:paste = "%#paste#%{&paste?'⎈ paste ':''}%*"
   let l:ale_e = '%#ale_error#%{S_ale_error()}%*'
   let l:ale_w = '%#ale_warning#%{S_ale_warning()}%*'
@@ -121,7 +122,7 @@ function! MyStatusLine()
   let l:ff = '%{&ff} %*'
   let l:pct = '%9* %P %*'
 
-  return l:buf_num.l:tot.'%<'.l:fs.l:fp.l:git.l:paste.l:ale_e.l:ale_w.
+  return l:buf_num.l:tot.'%<'.l:fs.l:fp.l:branch.l:gutter.l:paste.l:ale_e.l:ale_w.
         \ '%='.l:m_r_f.l:pos.l:enc.l:ff.l:pct
 endfunction
 
@@ -176,6 +177,7 @@ function! S_statusline_hi()
   call s:hi('User5'      , 208 , s:bg+3 )
   call s:hi('User6'      , 184 , s:bg+2 , 'bold' )
 
+  call s:hi('gutter'      , 184 , s:bg+2)
   call s:hi('paste'       , 149 , s:bg+4)
   call s:hi('ale_error'   , 197 , s:bg+2)
   call s:hi('ale_warning' , 214 , s:bg+2)

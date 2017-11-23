@@ -182,7 +182,7 @@ function! S_statusline_hi()
   call s:hi('ale_error'   , 197 , s:bg+2)
   call s:hi('ale_warning' , 214 , s:bg+2)
 
-  call s:hi('StatusLine' , 140 , s:bg+2 )
+  call s:hi('StatusLine' , 140 , s:bg+2 , 'none')
 
   call s:hi('User7'      , 249 , s:bg+3 )
   call s:hi('User8'      , 250 , s:bg+4 )

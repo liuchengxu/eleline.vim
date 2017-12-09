@@ -13,6 +13,8 @@ let g:loaded_eleline = 1
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
+let s:font = get(g:, 'eleline_powerline_fonts', get(g:, 'airline_powerline_fonts', 0))
+
 function! s:circled_num(num)
   return nr2char(9311 + a:num)
 endfunction
@@ -69,7 +71,8 @@ endfunction
 function! S_fugitive()
   if exists('g:loaded_fugitive')
     let l:head = fugitive#head()
-    return empty(l:head) ? '' : ' ⎇ '.l:head . ' '
+    let l:symbol = s:font ? " \ue0a0 " : ' ⎇ '
+    return empty(l:head) ? '' : l:symbol.l:head . ' '
   endif
   return ''
 endfunction
@@ -102,34 +105,33 @@ endfunction
 " %P Percentage
 " %#HighlightGroup#
 
-function! MyStatusLine()
+function! s:MyStatusLine()
   if has('gui_running')
-      let l:buf_num = '%1* %n ❖ %{winnr()} %*'
+      let l:buf_num = "%1* %n ❖ %{winnr()} %*"
   else
-      let l:buf_num = '%1* %{S_buf_num()} ❖ %{winnr()} %*'
+      let l:buf_num = "%1* %{S_buf_num()} ❖ %{winnr()} %*"
   endif
+  let l:paste = "%#paste#%{&paste?'PASTE ':''}%*"
   let l:tot = '%2*[TOT:%{S_buf_total_num()}]%*'
   let l:fs = '%3* %{S_file_size(@%)} %*'
   let l:fp = '%4* %{S_full_path()} %*'
   let l:branch = '%6*%{S_fugitive()}%*'
   let l:gutter = '%{S_gitgutter()}'
-  let l:paste = "%#paste#%{&paste?'⎈ paste ':''}%*"
   let l:ale_e = '%#ale_error#%{S_ale_error()}%*'
   let l:ale_w = '%#ale_warning#%{S_ale_warning()}%*'
   let l:m_r_f = '%7* %m%r%y %*'
-  let l:pos = '%8* %l:%c%V |'
+  if s:font
+    let l:pos = '%8* '. "\ue0a1 %l:%c%V |"
+  else
+    let l:pos = '%8* %l:%c%V |'
+  endif
   let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM\":\"\")}"
   let l:ff = '%{&ff} %*'
   let l:pct = '%9* %P %*'
 
-  return l:buf_num.l:tot.'%<'.l:fs.l:fp.l:branch.l:gutter.l:paste.l:ale_e.l:ale_w.
+  return l:buf_num.l:paste.l:tot.'%<'.l:fs.l:fp.l:branch.l:gutter.l:ale_e.l:ale_w.
         \ '%='.l:m_r_f.l:pos.l:enc.l:ff.l:pct
 endfunction
-
-" Note that the "%!" expression is evaluated in the context of the
-" current window and buffer, while %{} items are evaluated in the
-" context of the window that the statusline belongs to.
-set statusline=%!MyStatusLine()
 
 let s:colors = {
             \   140 : '#af87d7', 149 : '#99cc66', 171 : '#d75fd7',
@@ -169,8 +171,9 @@ if has('termguicolors') && &termguicolors
   let s:bg = 235
 endif
 
-function! S_statusline_hi()
+function! s:hi_statusline()
   call s:hi('User1'      , 232 , 178  )
+  call s:hi('paste'      , 232 , 178    , 'bold')
   call s:hi('User2'      , 178 , s:bg+8 )
   call s:hi('User3'      , 250 , s:bg+6 )
   call s:hi('User4'      , 171 , s:bg+4 , 'bold' )
@@ -178,7 +181,6 @@ function! S_statusline_hi()
   call s:hi('User6'      , 184 , s:bg+2 , 'bold' )
 
   call s:hi('gutter'      , 184 , s:bg+2)
-  call s:hi('paste'       , 149 , s:bg+4)
   call s:hi('ale_error'   , 197 , s:bg+2)
   call s:hi('ale_warning' , 214 , s:bg+2)
 
@@ -189,12 +191,22 @@ function! S_statusline_hi()
   call s:hi('User9'      , 251 , s:bg+5 )
 endfunction
 
-" User-defined highlightings shoule be put after colorscheme command.
-call S_statusline_hi()
+" Note that the "%!" expression is evaluated in the context of the
+" current window and buffer, while %{} items are evaluated in the
+" context of the window that the statusline belongs to.
+function! SetMyStatusline(timer) abort
+  let &statusline = s:MyStatusLine()
+  " User-defined highlightings shoule be put after colorscheme command.
+  call s:hi_statusline()
+endfunction
+
+if exists('*timer_start')
+  call timer_start(200, 'SetMyStatusline')
+endif
 
 augroup eleline
   autocmd!
-  autocmd ColorScheme * call S_statusline_hi()
+  autocmd ColorScheme * call s:hi_statusline()
 augroup END
 
 let &cpoptions = s:save_cpo

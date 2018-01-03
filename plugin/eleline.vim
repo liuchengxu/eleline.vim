@@ -202,6 +202,8 @@ endfunction
 
 if exists('*timer_start')
   call timer_start(200, 'SetMyStatusline')
+else
+  call SetMyStatusline()
 endif
 
 augroup eleline

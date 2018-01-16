@@ -121,9 +121,9 @@ function! s:MyStatusLine()
   let l:ale_w = '%#ale_warning#%{S_ale_warning()}%*'
   let l:m_r_f = '%7* %m%r%y %*'
   if s:font
-    let l:pos = '%8* '. "\ue0a1 %l:%c%V |"
+    let l:pos = '%8* '. "\ue0a1 %l/%L:%c%V |"
   else
-    let l:pos = '%8* %l:%c%V |'
+    let l:pos = '%8* %l/%L:%c%V |'
   endif
   let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM\":\"\")}"
   let l:ff = '%{&ff} %*'

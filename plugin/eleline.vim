@@ -79,7 +79,7 @@ endfunction
 
 function! S_gitgutter()
   if exists('b:gitgutter')
-    let l:summary = b:gitgutter.summary
+    let l:summary = get(b:gitgutter, 'summary', [0, 0, 0])
     if l:summary[0] != 0 || l:summary[1] != 0 || l:summary[2] != 0
       return ' +'.l:summary[0].' ~'.l:summary[1].' -'.l:summary[2].' '
     endif
@@ -201,7 +201,7 @@ function! SetMyStatusline(timer) abort
 endfunction
 
 if exists('*timer_start')
-  call timer_start(200, 'SetMyStatusline')
+  call timer_start(100, 'SetMyStatusline')
 else
   call SetMyStatusline()
 endif

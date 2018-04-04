@@ -203,7 +203,7 @@ endfunction
 if exists('*timer_start')
   call timer_start(100, 'SetMyStatusline')
 else
-  call SetMyStatusline()
+  call SetMyStatusline('')
 endif
 
 augroup eleline

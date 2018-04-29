@@ -134,8 +134,8 @@ function! s:MyStatusLine()
 endfunction
 
 let s:colors = {
-            \   140 : '#af87d7', 149 : '#99cc66', 171 : '#d75fd7',
-            \   178 : '#ffbb7d', 184 : '#ffe920', 208 : '#ff8700',
+            \   140 : '#af87d7', 149 : '#99cc66', 171 : '#5ed65e', 39 : '#00afff',
+            \   178 : '#ffbb7d', 184 : '#ffe920', 208 : '#ff8700', 33 : '#0087ff',
             \   232 : '#333300', 197 : '#cc0033', 214 : '#ffff66',
             \
             \   235 : '#262626', 236 : '#303030', 237 : '#3a3a3a',
@@ -176,7 +176,7 @@ function! s:hi_statusline()
   call s:hi('paste'      , 232 , 178    , 'bold')
   call s:hi('User2'      , 178 , s:bg+8 )
   call s:hi('User3'      , 250 , s:bg+6 )
-  call s:hi('User4'      , 171 , s:bg+4 , 'bold' )
+  call s:hi('User4'      , 39, s:bg+4 , 'bold' )
   call s:hi('User5'      , 208 , s:bg+3 )
   call s:hi('User6'      , 184 , s:bg+2 , 'bold' )
 

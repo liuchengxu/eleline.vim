@@ -134,11 +134,10 @@ function! s:MyStatusLine()
 endfunction
 
 let s:colors = {
-            \   140 : '#af87d7', 149 : '#99cc66', 171 : '#5ed65e', 39 : '#00afff',
-            \   178 : '#ffbb7d', 184 : '#ffe920', 208 : '#ff8700', 33 : '#0087ff',
-            \   232 : '#333300', 197 : '#cc0033', 214 : '#ffff66',
-            \
-            \   235 : '#262626', 236 : '#303030', 237 : '#3a3a3a',
+            \   140 : '#af87d7', 149 : '#99cc66', 171 : '#5ed65e', 39  : '#00afff',
+            \   178 : '#ffbb7d', 184 : '#ffe920', 208 : '#ff8700', 179 : '#d7af5f',
+            \   232 : '#333300', 197 : '#cc0033', 214 : '#ffff66', 196 : '#ff0000',
+            \   235 : '#262626', 236 : '#303030', 237 : '#3a3a3a', 7   : '#c0c0c0',
             \   238 : '#444444', 239 : '#4e4e4e', 240 : '#585858',
             \   241 : '#606060', 242 : '#666666', 243 : '#767676',
             \   244 : '#808080', 245 : '#8a8a8a', 246 : '#949494',
@@ -172,13 +171,13 @@ if has('termguicolors') && &termguicolors
 endif
 
 function! s:hi_statusline()
-  call s:hi('User1'      , 232 , 178  )
-  call s:hi('paste'      , 232 , 178    , 'bold')
-  call s:hi('User2'      , 178 , s:bg+8 )
-  call s:hi('User3'      , 250 , s:bg+6 )
-  call s:hi('User4'      , 39, s:bg+4 , 'bold' )
-  call s:hi('User5'      , 208 , s:bg+3 )
-  call s:hi('User6'      , 184 , s:bg+2 , 'bold' )
+  call s:hi('User1'      , 7 , s:bg+8 )
+  call s:hi('paste'      , 232 , s:bg+1  , 'bold')
+  call s:hi('User2'      , 178 , s:bg+6 )
+  call s:hi('User3'      , 250 , s:bg+4 )
+  call s:hi('User4'      , 39, s:bg+3 , 'bold' )
+  call s:hi('User5'      , 208 , s:bg+2 )
+  call s:hi('User6'      , 184 , s:bg+3 , 'bold' )
 
   call s:hi('gutter'      , 184 , s:bg+2)
   call s:hi('ale_error'   , 197 , s:bg+2)
@@ -190,6 +189,20 @@ function! s:hi_statusline()
   call s:hi('User8'      , 250 , s:bg+4 )
   call s:hi('User9'      , 251 , s:bg+5 )
 endfunction
+
+function! InsertStatuslineColor(mode)
+  if a:mode == 'i'
+    call s:hi('User1' , 239 ,  179 )
+  elseif a:mode == 'r'
+    call s:hi('User1' , 239 ,  196 )
+  else
+    call s:hi('User1' , 7   , s:bg+8 )
+  endif
+endfunction
+
+au InsertEnter * call InsertStatuslineColor(v:insertmode)
+au InsertChange * call InsertStatuslineColor(v:insertmode)
+au InsertLeave * call s:hi('User1'      , 7 , s:bg+8 )
 
 " Note that the "%!" expression is evaluated in the context of the
 " current window and buffer, while %{} items are evaluated in the

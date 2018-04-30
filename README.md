@@ -2,17 +2,15 @@
 
 A tiny **ele**gant status**line** for vim, extracted from [space-vim](https://github.com/liuchengxu/space-vim).
 
-- Normal mode
+- Ordinary font
 
-  ![screenshot](https://raw.githubusercontent.com/MaraniMatias/eleline.vim/mm/screenshot/normal-mode.png)
-
-- Insert mode
-
-  ![screenshot](https://raw.githubusercontent.com/MaraniMatias/eleline.vim/mm/screenshot/insert-mode.png)
+  ![screenshot](https://github.com/liuchengxu/eleline.vim/blob/screenshots/screenshot.png?raw=true)
 
 - Powerline font
 
   If the powerline font is available, i.e., `let g:airline_powerline_fonts = 1` or `let g:eleline_powerline_fonts = 1`:
+
+  ![screenshot](https://raw.githubusercontent.com/liuchengxu/img/master/eleline.vim/eleline-powerline-font.png)
 
 Don't forget to `set laststatus=2` to always display statusline in vim.
 

@@ -203,10 +203,6 @@ function! InsertStatuslineColor(mode)
   endif
 endfunction
 
-au InsertEnter * call InsertStatuslineColor(v:insertmode)
-au InsertChange * call InsertStatuslineColor(v:insertmode)
-au InsertLeave * call s:hi('User1'      , 7 , s:bg+8 )
-
 " Note that the "%!" expression is evaluated in the context of the
 " current window and buffer, while %{} items are evaluated in the
 " context of the window that the statusline belongs to.
@@ -225,6 +221,10 @@ endif
 augroup eleline
   autocmd!
   autocmd ColorScheme * call s:hi_statusline()
+  " Change colors for insert mode
+  autocmd InsertEnter * call InsertStatuslineColor(v:insertmode)
+  autocmd InsertChange * call InsertStatuslineColor(v:insertmode)
+  autocmd InsertLeave * call s:hi('User1'      , 7 , s:bg+8 )
 augroup END
 
 let &cpoptions = s:save_cpo

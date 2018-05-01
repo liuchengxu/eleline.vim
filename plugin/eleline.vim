@@ -134,9 +134,10 @@ function! s:MyStatusLine()
 endfunction
 
 let s:colors = {
-            \   140 : '#af87d7', 149 : '#99cc66', 171 : '#d75fd7',
-            \   178 : '#ffbb7d', 184 : '#ffe920', 208 : '#ff8700',
-            \   232 : '#333300', 197 : '#cc0033', 214 : '#ffff66',
+            \   140 : '#af87d7', 149 : '#99cc66', 160 : '#d70000',
+            \   171 : '#d75fd7', 178 : '#ffbb7d', 184 : '#ffe920',
+            \   208 : '#ff8700', 232 : '#333300', 197 : '#cc0033',
+            \   214 : '#ffff66',
             \
             \   235 : '#262626', 236 : '#303030', 237 : '#3a3a3a',
             \   238 : '#444444', 239 : '#4e4e4e', 240 : '#585858',
@@ -191,6 +192,16 @@ function! s:hi_statusline()
   call s:hi('User9'      , 251 , s:bg+5 )
 endfunction
 
+function! InsertStatuslineColor(mode)
+  if a:mode == 'i'
+    call s:hi('User1' , 251 , s:bg+8 )
+  elseif a:mode == 'r'
+    call s:hi('User1' , 232 ,  160 )
+  else
+    call s:hi('User1' , 232 , 178  )
+  endif
+endfunction
+
 " Note that the "%!" expression is evaluated in the context of the
 " current window and buffer, while %{} items are evaluated in the
 " context of the window that the statusline belongs to.
@@ -209,6 +220,10 @@ endif
 augroup eleline
   autocmd!
   autocmd ColorScheme * call s:hi_statusline()
+  " Change colors for insert mode
+  autocmd InsertEnter * call InsertStatuslineColor(v:insertmode)
+  autocmd InsertChange * call InsertStatuslineColor(v:insertmode)
+  autocmd InsertLeave * call s:hi('User1' , 232 , 178  )
 augroup END
 
 let &cpoptions = s:save_cpo

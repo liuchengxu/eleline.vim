@@ -173,7 +173,7 @@ if has('termguicolors') && &termguicolors
 endif
 
 function! s:hi_statusline()
-  call s:hi('User1'      , 232 , 178  )
+  call s:hi('User1'      , 251 , s:bg+8 )
   call s:hi('paste'      , 232 , 178    , 'bold')
   call s:hi('User2'      , 178 , s:bg+8 )
   call s:hi('User3'      , 250 , s:bg+6 )
@@ -194,7 +194,7 @@ endfunction
 
 function! InsertStatuslineColor(mode)
   if a:mode == 'i'
-    call s:hi('User1' , 232 ,  171 )
+    call s:hi('User1' , 232 , 178  )
   elseif a:mode == 'r'
     call s:hi('User1' , 232 ,  160 )
   else
@@ -223,7 +223,7 @@ augroup eleline
   " Change colors for insert mode
   autocmd InsertEnter * call InsertStatuslineColor(v:insertmode)
   autocmd InsertChange * call InsertStatuslineColor(v:insertmode)
-  autocmd InsertLeave * call s:hi('User1'      , 232 , 178  )
+  autocmd InsertLeave * call s:hi('User1', 251 , s:bg+8 )
 augroup END
 
 let &cpoptions = s:save_cpo

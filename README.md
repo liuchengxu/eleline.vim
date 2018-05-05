@@ -19,6 +19,7 @@ Supported plugins:
 - [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
 - [vim-fugitive](https://github.com/tpope/vim-fugitive)
 - [ale](https://github.com/w0rp/ale)
+- [vim-gutentags](https://github.com/ludovicchabant/vim-gutentags)
 
 ## Installation
 

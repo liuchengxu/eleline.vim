@@ -87,6 +87,12 @@ function! S_gitgutter()
   return ''
 endfunction
 
+function! S_gutentags()
+  if exists('b:gutentags_files')
+    return gutentags#statusline()
+  endif
+endfunction
+
 " The decoration of statusline was originally stealed from
 " https://github.com/junegunn/dotfiles/blob/master/vimrc.
 "
@@ -119,6 +125,7 @@ function! s:MyStatusLine()
   let l:gutter = '%{S_gitgutter()}'
   let l:ale_e = '%#ale_error#%{S_ale_error()}%*'
   let l:ale_w = '%#ale_warning#%{S_ale_warning()}%*'
+  let l:tags = '%{S_gutentags()}'
   let l:m_r_f = '%7* %m%r%y %*'
   if s:font
     let l:pos = '%8* '. "\ue0a1 %l/%L:%c%V |"
@@ -130,7 +137,7 @@ function! s:MyStatusLine()
   let l:pct = '%9* %P %*'
 
   return l:buf_num.l:paste.l:tot.'%<'.l:fs.l:fp.l:branch.l:gutter.l:ale_e.l:ale_w.
-        \ '%='.l:m_r_f.l:pos.l:enc.l:ff.l:pct
+        \ '%='.l:tags.l:m_r_f.l:pos.l:enc.l:ff.l:pct
 endfunction
 
 let s:colors = {

@@ -91,6 +91,7 @@ function! S_gutentags()
   if exists('b:gutentags_files')
     return gutentags#statusline()
   endif
+  return ''
 endfunction
 
 " The decoration of statusline was originally stealed from

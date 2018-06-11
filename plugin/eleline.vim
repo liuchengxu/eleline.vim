@@ -165,7 +165,7 @@ function! s:hi(group, fg, bg, ...)
 endfunction
 
 if !exists('g:eleline_background')
-  let s:normal_bg = synIDattr(hlID('Normal'), 'bg', 'cterm')
+  let s:normal_bg = synIDattr(synIDtrans(hlID('Normal')), "bg", 'cterm')
   if s:normal_bg >= 233 && s:normal_bg <= 243
     let s:bg = s:normal_bg
   else

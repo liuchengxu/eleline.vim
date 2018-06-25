@@ -14,6 +14,7 @@ let s:save_cpo = &cpoptions
 set cpoptions&vim
 
 let s:font = get(g:, 'eleline_powerline_fonts', get(g:, 'airline_powerline_fonts', 0))
+let s:jobs = {}
 
 function! s:circled_num(num)
   return nr2char(9311 + a:num)
@@ -45,11 +46,7 @@ function! S_file_size(f)
 endfunction
 
 function! S_full_path()
-  if &filetype ==# 'startify'
-    return ''
-  else
-    return expand('%:p:t')
-  endif
+  return &filetype ==# 'startify' ? '' : expand('%:p:t')
 endfunction
 
 function! S_ale_error()
@@ -68,13 +65,84 @@ function! S_ale_warning()
   return ''
 endfunction
 
-function! S_fugitive()
-  if exists('g:loaded_fugitive')
+function! s:is_tmp_file()
+  if !empty(&buftype) | return 1 | endif
+  if &filetype ==# 'gitcommit' | return 1 | endif
+  if expand('%:p') =~# '^/tmp' | return 1 | endif
+endfunction
+
+" Reference: https://github.com/chemzqm/vimrc/blob/master/statusline.vim
+function! S_fugitive(...) abort
+  if s:is_tmp_file() | return '' | endif
+  let reload = get(a:, 1, 0) == 1
+  if exists('b:eleline_branch') && !reload | return b:eleline_branch | endif
+  if !exists('*FugitiveExtractGitDir') | return '' | endif
+  let roots = values(s:jobs)
+  let dir = get(b:, 'git_dir', FugitiveExtractGitDir(resolve(expand('%:p'))))
+  if empty(dir) | return '' | endif
+  let b:git_dir = dir
+  let root = fnamemodify(dir, ':h')
+  if index(roots, root) >= 0 | return '' | endif
+
+  let argv = has('win32') ? ['cmd', '/c', 'git branch'] : ['bash', '-c', 'git branch']
+  if exists('*job_start')
+    let job = job_start(argv, {'out_io': 'pipe', 'err_io':'null',  'out_cb': function('s:branch')})
+    if job_status(job) == 'fail' | return '' | endif
+    let s:cwd = root
+    let job_id = matchstr(job, '\d\+')
+    let s:jobs[job_id] = root
+  elseif exists('*jobstart')
+    let job_id = jobstart(argv, {
+      \ 'cwd': root,
+      \ 'stdout_buffered': v:true,
+      \ 'stderr_buffered': v:true,
+      \ 'on_exit': function('s:JobHandler')
+      \})
+    if job_id == 0 || job_id == -1 | return '' | endif
+    let s:jobs[job_id] = root
+  elseif exists('g:loaded_fugitive')
     let l:head = fugitive#head()
     let l:symbol = s:font ? " \ue0a0 " : ' ⎇ '
     return empty(l:head) ? '' : l:symbol.l:head . ' '
   endif
+
   return ''
+endfunction
+
+function! s:branch(channel, message) abort
+  if a:message =~ "^* "
+    let l:job = ch_getjob(a:channel)
+    let l:job_id = matchstr(string(l:job), '\d\+')
+    if !has_key(s:jobs, l:job_id) | return | endif
+    let l:branch = substitute(a:message, '*', s:font ? " \ue0a0" : ' ⎇ ', '')
+    call s:SetGitStatus(s:cwd, l:branch.' ')
+    call remove(s:jobs, l:job_id)
+  endif
+endfunction
+
+function! s:JobHandler(job_id, data, event) dict abort
+  if !has_key(s:jobs, a:job_id) | return | endif
+  if v:dying | return | endif
+  let l:cur_branch = join(filter(self.stdout, 'v:val =~ "*"'))
+  if !empty(l:cur_branch)
+    let l:branch = substitute(l:cur_branch, '*', s:font ? " \ue0a0" : ' ⎇ ', '')
+    call s:SetGitStatus(self.cwd, l:branch.' ')
+  else
+    let errs = join(self.stderr)
+    if !empty(errs) | echoerr errs | endif
+  endif
+  call remove(s:jobs, a:job_id)
+endfunction
+
+function! s:SetGitStatus(root, str)
+  let buf_list = filter(range(1, bufnr('$')), 'bufexists(v:val)')
+  for nr in buf_list
+    let path = fnamemodify(bufname(nr), ':p')
+    if match(path, a:root) >= 0
+      call setbufvar(nr, 'eleline_branch', a:str)
+    endif
+  endfor
+  redraws!
 endfunction
 
 function! S_gitgutter()
@@ -94,30 +162,9 @@ function! S_gutentags()
   return ''
 endfunction
 
-" The decoration of statusline was originally stealed from
-" https://github.com/junegunn/dotfiles/blob/master/vimrc.
-"
-" %< Where to truncate
-" %n buffer number
-" %F Full path
-" %m Modified flag: [+], [-]
-" %r Readonly flag: [RO]
-" %y Type:          [vim]
-" fugitive#statusline()
-" %= Separator
-" %-14.(...)
-" %l Line
-" %c Column
-" %V Virtual column
-" %P Percentage
-" %#HighlightGroup#
-
+" https://github.com/liuchengxu/eleline.vim/wiki
 function! s:MyStatusLine()
-  if has('gui_running')
-      let l:buf_num = "%1* %n ❖ %{winnr()} %*"
-  else
-      let l:buf_num = "%1* %{S_buf_num()} ❖ %{winnr()} %*"
-  endif
+  let l:buf_num = '%1* '.(has('gui_running')?'%n':'%{S_buf_num()}')." ❖ %{winnr()} %*"
   let l:paste = "%#paste#%{&paste?'PASTE ':''}%*"
   let l:tot = '%2*[TOT:%{S_buf_total_num()}]%*'
   let l:fs = '%3* %{S_file_size(@%)} %*'
@@ -128,11 +175,7 @@ function! s:MyStatusLine()
   let l:ale_w = '%#ale_warning#%{S_ale_warning()}%*'
   let l:tags = '%{S_gutentags()}'
   let l:m_r_f = '%7* %m%r%y %*'
-  if s:font
-    let l:pos = '%8* '. "\ue0a1 %l/%L:%c%V |"
-  else
-    let l:pos = '%8* %l/%L:%c%V |'
-  endif
+  let l:pos = '%8* '.(s:font?"\ue0a1":'').'%l/%L:%c%V |'
   let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM\":\"\")}"
   let l:ff = '%{&ff} %*'
   let l:pct = '%9* %P %*'
@@ -200,7 +243,7 @@ function! s:hi_statusline()
   call s:hi('User9'      , 251 , s:bg+5 )
 endfunction
 
-function! InsertStatuslineColor(mode)
+function! s:InsertStatuslineColor(mode)
   if a:mode == 'i'
     call s:hi('User1' , 251 , s:bg+8 )
   elseif a:mode == 'r'
@@ -213,8 +256,9 @@ endfunction
 " Note that the "%!" expression is evaluated in the context of the
 " current window and buffer, while %{} items are evaluated in the
 " context of the window that the statusline belongs to.
-function! SetMyStatusline(timer) abort
-  let &statusline = s:MyStatusLine()
+function! SetMyStatusline(...) abort
+  call S_fugitive(1)
+  let &l:statusline = s:MyStatusLine()
   " User-defined highlightings shoule be put after colorscheme command.
   call s:hi_statusline()
 endfunction
@@ -222,16 +266,17 @@ endfunction
 if exists('*timer_start')
   call timer_start(100, 'SetMyStatusline')
 else
-  call SetMyStatusline('')
+  call SetMyStatusline()
 endif
 
 augroup eleline
   autocmd!
-  autocmd ColorScheme * call s:hi_statusline()
   " Change colors for insert mode
-  autocmd InsertEnter * call InsertStatuslineColor(v:insertmode)
-  autocmd InsertChange * call InsertStatuslineColor(v:insertmode)
   autocmd InsertLeave * call s:hi('User1' , 232 , 178  )
+  autocmd InsertEnter,InsertChange * call s:InsertStatuslineColor(v:insertmode)
+  autocmd BufWinEnter,ShellCmdPost,BufWritePost * call SetMyStatusline()
+  autocmd FileChangedShellPost,ColorScheme * call SetMyStatusline()
+  autocmd FileReadPre,ShellCmdPost,FileWritePost * call SetMyStatusline()
 augroup END
 
 let &cpoptions = s:save_cpo

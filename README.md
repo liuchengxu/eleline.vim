@@ -1,6 +1,6 @@
 # eleline.vim
 
-A tiny **ele**gant status**line** for vim, extracted from [space-vim](https://github.com/liuchengxu/space-vim).
+Another **ele**gant status**line** for vim, extracted from [space-vim](https://github.com/liuchengxu/space-vim).
 
 - Ordinary font
 
@@ -17,7 +17,7 @@ Don't forget to `set laststatus=2` to always display statusline in vim.
 Supported plugins:
 
 - [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
-- [vim-fugitive](https://github.com/tpope/vim-fugitive)
+- [vim-fugitive](https://github.com/tpope/vim-fugitive). If you're using newer vim or neovim, i.e., async API is available, eleline will probe the git branch info asynchronously, instead of depending on vim-fugitive.
 - [ale](https://github.com/w0rp/ale)
 - [vim-gutentags](https://github.com/ludovicchabant/vim-gutentags)
 

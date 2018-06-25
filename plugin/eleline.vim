@@ -77,7 +77,7 @@ endfunction
 
 " Reference: https://github.com/chemzqm/vimrc/blob/master/statusline.vim
 function! S_fugitive(...) abort
-  if s:is_tmp_file() | return | endif
+  if s:is_tmp_file() | return '' | endif
   let reload = get(a:, 1, 0) == 1
   if exists('b:eleline_branch') && !reload | return b:eleline_branch | endif
   if !exists('*FugitiveExtractGitDir') | return '' | endif

@@ -272,6 +272,7 @@ endif
 augroup eleline
   autocmd!
   " Change colors for insert mode
+  autocmd User GitGutter,Startified call SetMyStatusline()
   autocmd InsertLeave * call s:hi('User1' , 232 , 178  )
   autocmd InsertEnter,InsertChange * call s:InsertStatuslineColor(v:insertmode)
   autocmd BufWinEnter,ShellCmdPost,BufWritePost * call SetMyStatusline()

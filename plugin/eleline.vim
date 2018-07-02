@@ -176,7 +176,7 @@ function! s:MyStatusLine()
   let l:tags = '%{S_gutentags()}'
   let l:m_r_f = '%7* %m%r%y %*'
   let l:pos = '%8* '.(s:font?"\ue0a1":'').'%l/%L:%c%V |'
-  let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM\":\"\")}"
+  let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM \":\"\")}"
   let l:ff = '%{&ff} %*'
   let l:pct = '%9* %P %*'
 

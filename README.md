@@ -2,7 +2,29 @@
 
 Another **ele**gant status**line** for vim, extracted from [space-vim](https://github.com/liuchengxu/space-vim).
 
-- Ordinary font
+## Installation
+
+This plugin can be installed with a varity of plugin managers, e.g., [vim-plug](https://github.com/junegunn/vim-plug):
+
+```vim
+Plug 'liuchengxu/eleline.vim'
+```
+Don't forget to `set laststatus=2` to always display statusline.
+
+## Usage
+
+It's encouraged to fork [eleline.vim](https://github.com/liuchengxu/eleline.vim) to make your own custom vim statusline.
+
+Currenctly supported plugins:
+
+- [ale](https://github.com/w0rp/ale)
+- [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
+- [vim-gutentags](https://github.com/ludovicchabant/vim-gutentags)
+- [vim-fugitive](https://github.com/tpope/vim-fugitive). If you're using newer vim or neovim, i.e., async API is available, eleline will probe the git branch info asynchronously, instead of depending on vim-fugitive.
+
+## Customization
+
+- Ordinary font by default
 
   ![screenshot](https://github.com/liuchengxu/eleline.vim/blob/screenshots/screenshot.png?raw=true)
 
@@ -12,21 +34,14 @@ Another **ele**gant status**line** for vim, extracted from [space-vim](https://g
 
   ![screenshot](https://raw.githubusercontent.com/liuchengxu/img/master/eleline.vim/eleline-powerline-font.png)
 
-Don't forget to `set laststatus=2` to always display statusline in vim.
+- Keep it simpler
 
-Supported plugins:
+  Only show the buffer number, window number, filename and info from the plugins via `let g:eleline_slim = 1`:
 
-- [ale](https://github.com/w0rp/ale)
-- [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
-- [vim-gutentags](https://github.com/ludovicchabant/vim-gutentags)
-- [vim-fugitive](https://github.com/tpope/vim-fugitive). If you're using newer vim or neovim, i.e., async API is available, eleline will probe the git branch info asynchronously, instead of depending on vim-fugitive.
+  ![screenshot](https://raw.githubusercontent.com/liuchengxu/img/master/eleline.vim/eleline_slim.png)
 
-## Installation
+  See `:h CTRL-G` when you need more info.
 
-This plugin can be installed with a varity of plugin managers, e.g., [vim-plug](https://github.com/junegunn/vim-plug):
+## License
 
-```vim
-Plug 'liuchengxu/eleline.vim'
-```
-
-It's encouraged to fork [eleline.vim](https://github.com/liuchengxu/eleline.vim) to make your own custom vim statusline.
+[MIT](LICENSE)

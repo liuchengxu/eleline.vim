@@ -166,22 +166,25 @@ endfunction
 function! s:MyStatusLine()
   let l:buf_num = '%1* '.(has('gui_running')?'%n':'%{S_buf_num()}')." ❖ %{winnr()} %*"
   let l:paste = "%#paste#%{&paste?'PASTE ':''}%*"
-  let l:tot = '%2*[TOT:%{S_buf_total_num()}]%*'
-  let l:fs = '%3* %{S_file_size(@%)} %*'
   let l:fp = '%4* %{S_full_path()} %*'
   let l:branch = '%6*%{S_fugitive()}%*'
   let l:gutter = '%{S_gitgutter()}'
   let l:ale_e = '%#ale_error#%{S_ale_error()}%*'
   let l:ale_w = '%#ale_warning#%{S_ale_warning()}%*'
   let l:tags = '%{S_gutentags()}'
-  let l:m_r_f = '%7* %m%r%y %*'
-  let l:pos = '%8* '.(s:font?"\ue0a1":'').'%l/%L:%c%V |'
-  let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM \":\"\")}"
-  let l:ff = '%{&ff} %*'
-  let l:pct = '%9* %P %*'
-
-  return l:buf_num.l:paste.l:tot.'%<'.l:fs.l:fp.l:branch.l:gutter.l:ale_e.l:ale_w.
-        \ '%='.l:tags.l:m_r_f.l:pos.l:enc.l:ff.l:pct
+  if get(g:, 'eleline_slim', 0)
+    return l:buf_num.l:paste.l:fp.'%<'.l:branch.l:gutter.l:ale_e.l:ale_w.l:tags
+  else
+    let l:tot = '%2*[TOT:%{S_buf_total_num()}]%*'
+    let l:fs = '%3* %{S_file_size(@%)} %*'
+    let l:m_r_f = '%7* %m%r%y %*'
+    let l:pos = '%8* '.(s:font?"\ue0a1":'').'%l/%L:%c%V |'
+    let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM \":\"\")}"
+    let l:ff = '%{&ff} %*'
+    let l:pct = '%9* %P %*'
+    return l:buf_num.l:paste.l:tot.'%<'.l:fs.l:fp.l:branch.l:gutter.l:ale_e.l:ale_w.
+          \ '%='.l:tags.l:m_r_f.l:pos.l:enc.l:ff.l:pct
+  endif
 endfunction
 
 let s:colors = {

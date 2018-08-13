@@ -18,9 +18,18 @@ It's encouraged to fork [eleline.vim](https://github.com/liuchengxu/eleline.vim)
 Currenctly supported plugins:
 
 - [ale](https://github.com/w0rp/ale)
+
 - [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
+
 - [vim-gutentags](https://github.com/ludovicchabant/vim-gutentags)
-- [vim-fugitive](https://github.com/tpope/vim-fugitive). If you're using newer vim or neovim, i.e., async API is available, eleline will probe the git branch info asynchronously, instead of depending on vim-fugitive.
+
+- [vim-fugitive](https://github.com/tpope/vim-fugitive).
+
+  If you're using newer vim or neovim, i.e., async API is available, eleline will probe the git branch info asynchronously, instead of depending on vim-fugitive.
+
+- [LanguageClient-neovim](https://github.com/autozimu/LanguageClient-neovim)
+
+  If `:echo has('timers')` equals 1, eleline will indicate whether the Lanuage Server is busy after event `LanguageClientStarted` is triggered.
 
 ## Customization
 

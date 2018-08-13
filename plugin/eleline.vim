@@ -84,7 +84,7 @@ function! S_fugitive(...) abort
   let root = fnamemodify(dir, ':h')
   if index(roots, root) >= 0 | return '' | endif
 
-  let argv = has('win32') ? ['cmd', '/c', 'git branch'] : ['bash', '-c', 'git branch']
+  let argv = add(has('win32') ? ['cmd', '/c']: ['bash', '-c'], 'git branch')
   if exists('*job_start')
     let job = job_start(argv, {'out_io': 'pipe', 'err_io':'null',  'out_cb': function('s:branch')})
     if job_status(job) == 'fail' | return '' | endif
@@ -162,6 +162,28 @@ function! S_gutentags()
   return ''
 endfunction
 
+" Inspired by: https://github.com/chemzqm/tstool.nvim
+let s:frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+let s:frames = ['◐', '◑', '◒', '◓']
+let s:frame_index = 0
+let s:lcn = ''
+
+function! s:OnFrame(timer) abort
+  let s:lcn = s:frames[s:frame_index]
+  let s:frame_index += 1
+  let s:frame_index = s:frame_index % len(s:frames)
+  " When the server is idle, LanguageClient#serverStatus() returns 0
+  if LanguageClient#serverStatus() == 0
+    call timer_stop(a:timer)
+    let s:lcn = ''
+  endif
+  redraws!
+endfunction
+
+function! S_languageclient_neovim()
+  return get(s:, 'lcn', '')
+endfunction
+
 " https://github.com/liuchengxu/eleline.vim/wiki
 function! s:MyStatusLine()
   let l:buf_num = '%1* '.(has('gui_running')?'%n':'%{S_buf_num()}')." ❖ %{winnr()} %*"
@@ -172,8 +194,9 @@ function! s:MyStatusLine()
   let l:ale_e = '%#ale_error#%{S_ale_error()}%*'
   let l:ale_w = '%#ale_warning#%{S_ale_warning()}%*'
   let l:tags = '%{S_gutentags()}'
+  let l:lcn = '%{S_languageclient_neovim()}'
   if get(g:, 'eleline_slim', 0)
-    return l:buf_num.l:paste.l:fp.'%<'.l:branch.l:gutter.l:ale_e.l:ale_w.l:tags
+    return l:buf_num.l:paste.l:fp.'%<'.l:branch.l:gutter.l:ale_e.l:ale_w.l:tags.l:lcn
   else
     let l:tot = '%2*[TOT:%{S_buf_total_num()}]%*'
     let l:fs = '%3* %{S_file_size(@%)} %*'
@@ -182,8 +205,8 @@ function! s:MyStatusLine()
     let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM \":\"\")}"
     let l:ff = '%{&ff} %*'
     let l:pct = '%9* %P %*'
-    return l:buf_num.l:paste.l:tot.'%<'.l:fs.l:fp.l:branch.l:gutter.l:ale_e.l:ale_w.
-          \ '%='.l:tags.l:m_r_f.l:pos.l:enc.l:ff.l:pct
+    return l:buf_num.l:paste.l:tot.'%<'.l:fs.l:fp.l:branch.l:gutter.l:ale_e.l:ale_w.l:lcn
+          \ .'%='.l:tags.l:m_r_f.l:pos.l:enc.l:ff.l:pct
   endif
 endfunction
 
@@ -266,16 +289,17 @@ function! SetMyStatusline(...) abort
   call s:hi_statusline()
 endfunction
 
-if exists('*timer_start')
+if has('timers')
   call timer_start(100, 'SetMyStatusline')
+  autocmd User LanguageClientStarted call timer_start(80, function('s:OnFrame'), {'repeat': -1})
 else
   call SetMyStatusline()
 endif
 
 augroup eleline
   autocmd!
+  autocmd User GitGutter,Startified,LanguageClientStarted call SetMyStatusline()
   " Change colors for insert mode
-  autocmd User GitGutter,Startified call SetMyStatusline()
   autocmd InsertLeave * call s:hi('User1' , 232 , 178  )
   autocmd InsertEnter,InsertChange * call s:InsertStatuslineColor(v:insertmode)
   autocmd BufWinEnter,ShellCmdPost,BufWritePost * call SetMyStatusline()

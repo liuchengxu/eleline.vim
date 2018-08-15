@@ -2,19 +2,6 @@
 
 Another **ele**gant status**line** for vim, extracted from [space-vim](https://github.com/liuchengxu/space-vim).
 
-## Installation
-
-This plugin can be installed with a varity of plugin managers, e.g., [vim-plug](https://github.com/junegunn/vim-plug):
-
-```vim
-Plug 'liuchengxu/eleline.vim'
-```
-Don't forget to `set laststatus=2` to always display statusline.
-
-## Usage
-
-It's encouraged to fork [eleline.vim](https://github.com/liuchengxu/eleline.vim) to make your own custom vim statusline.
-
 Currenctly supported plugins:
 
 - [ale](https://github.com/w0rp/ale)
@@ -29,7 +16,18 @@ Currenctly supported plugins:
 
 - [LanguageClient-neovim](https://github.com/autozimu/LanguageClient-neovim)
 
-  If `:echo has('timers')` equals 1, eleline will indicate whether the Lanuage Server is busy after event `LanguageClientStarted` is triggered.
+## Installation
+
+This plugin can be installed with a varity of plugin managers, e.g., [vim-plug](https://github.com/junegunn/vim-plug):
+
+```vim
+Plug 'liuchengxu/eleline.vim'
+```
+Don't forget to `set laststatus=2` to always display statusline.
+
+## Usage
+
+It's encouraged to fork [eleline.vim](https://github.com/liuchengxu/eleline.vim) to make your own custom vim statusline.
 
 ## Customization
 

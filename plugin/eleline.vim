@@ -196,7 +196,7 @@ function! S_languageclient_neovim() abort
 endfunction
 
 " https://github.com/liuchengxu/eleline.vim/wiki
-function! s:MyStatusLine()
+function! s:StatusLine()
   let l:buf_num = '%1* '.(has('gui_running')?'%n':'%{S_buf_num()}')." ❖ %{winnr()} %*"
   let l:paste = "%#paste#%{&paste?'PASTE ':''}%*"
   let l:fp = '%4* %{S_full_path()} %*'
@@ -208,17 +208,16 @@ function! s:MyStatusLine()
   let l:lcn = '%{S_languageclient_neovim()}'
   if get(g:, 'eleline_slim', 0)
     return l:buf_num.l:paste.l:fp.'%<'.l:branch.l:gutter.l:ale_e.l:ale_w.l:tags.l:lcn
-  else
-    let l:tot = '%2*[TOT:%{S_buf_total_num()}]%*'
-    let l:fs = '%3* %{S_file_size(@%)} %*'
-    let l:m_r_f = '%7* %m%r%y %*'
-    let l:pos = '%8* '.(s:font?"\ue0a1":'').'%l/%L:%c%V |'
-    let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM \":\"\")}"
-    let l:ff = '%{&ff} %*'
-    let l:pct = '%9* %P %*'
-    return l:buf_num.l:paste.l:tot.'%<'.l:fs.l:fp.l:branch.l:gutter.l:ale_e.l:ale_w.l:lcn
-          \ .'%='.l:tags.l:m_r_f.l:pos.l:enc.l:ff.l:pct
   endif
+  let l:tot = '%2*[TOT:%{S_buf_total_num()}]%*'
+  let l:fs = '%3* %{S_file_size(@%)} %*'
+  let l:m_r_f = '%7* %m%r%y %*'
+  let l:pos = '%8* '.(s:font?"\ue0a1":'').'%l/%L:%c%V |'
+  let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM \":\"\")}"
+  let l:ff = '%{&ff} %*'
+  let l:pct = '%9* %P %*'
+  return l:buf_num.l:paste.l:tot.'%<'.l:fs.l:fp.l:branch.l:gutter.l:ale_e.l:ale_w.l:lcn
+        \ .'%='.l:tags.l:m_r_f.l:pos.l:enc.l:ff.l:pct
 endfunction
 
 let s:colors = {
@@ -293,28 +292,28 @@ endfunction
 " Note that the "%!" expression is evaluated in the context of the
 " current window and buffer, while %{} items are evaluated in the
 " context of the window that the statusline belongs to.
-function! SetMyStatusline(...) abort
+function! s:SetStatusline(...) abort
   call S_fugitive(1)
-  let &l:statusline = s:MyStatusLine()
+  let &l:statusline = s:StatusLine()
   " User-defined highlightings shoule be put after colorscheme command.
   call s:hi_statusline()
 endfunction
 
-if has('timers')
-  call timer_start(100, 'SetMyStatusline')
+if exists('*timer_start')
+  call timer_start(100, function('s:SetStatusline'))
 else
-  call SetMyStatusline()
+  call s:SetStatusline()
 endif
 
 augroup eleline
   autocmd!
-  autocmd User GitGutter,Startified,LanguageClientStarted call SetMyStatusline()
+  autocmd User GitGutter,Startified,LanguageClientStarted call s:SetStatusline()
   " Change colors for insert mode
   autocmd InsertLeave * call s:hi('User1' , 232 , 178  )
   autocmd InsertEnter,InsertChange * call s:InsertStatuslineColor(v:insertmode)
-  autocmd BufWinEnter,ShellCmdPost,BufWritePost * call SetMyStatusline()
-  autocmd FileChangedShellPost,ColorScheme * call SetMyStatusline()
-  autocmd FileReadPre,ShellCmdPost,FileWritePost * call SetMyStatusline()
+  autocmd BufWinEnter,ShellCmdPost,BufWritePost * call s:SetStatusline()
+  autocmd FileChangedShellPost,ColorScheme * call s:SetStatusline()
+  autocmd FileReadPre,ShellCmdPost,FileWritePost * call s:SetStatusline()
 augroup END
 
 let &cpoptions = s:save_cpo

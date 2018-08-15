@@ -145,12 +145,15 @@ function! s:SetGitStatus(root, str)
   redraws!
 endfunction
 
-function! S_gitgutter()
-  if exists('b:gitgutter')
-    let l:summary = get(b:gitgutter, 'summary', [0, 0, 0])
-    if l:summary[0] != 0 || l:summary[1] != 0 || l:summary[2] != 0
-      return ' +'.l:summary[0].' ~'.l:summary[1].' -'.l:summary[2].' '
-    endif
+function! S_git()
+  let l:summary = [0, 0, 0]
+  if exists('b:sy')
+    let l:summary = b:sy.stats
+  elseif exists('b:gitgutter.summary')
+    let l:summary = b:gitgutter.summary
+  endif
+  if max(l:summary) > 0
+    return ' +'.l:summary[0].' ~'.l:summary[1].' -'.l:summary[2].' '
   endif
   return ''
 endfunction
@@ -198,7 +201,7 @@ function! s:MyStatusLine()
   let l:paste = "%#paste#%{&paste?'PASTE ':''}%*"
   let l:fp = '%4* %{S_full_path()} %*'
   let l:branch = '%6*%{S_fugitive()}%*'
-  let l:gutter = '%{S_gitgutter()}'
+  let l:gutter = '%{S_git()}'
   let l:ale_e = '%#ale_error#%{S_ale_error()}%*'
   let l:ale_w = '%#ale_warning#%{S_ale_warning()}%*'
   let l:tags = '%{S_gutentags()}'

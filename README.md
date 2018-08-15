@@ -8,6 +8,8 @@ Currenctly supported plugins:
 
 - [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
 
+- [vim-signify](https://github.com/mhinz/vim-signify)
+
 - [vim-gutentags](https://github.com/ludovicchabant/vim-gutentags)
 
 - [vim-fugitive](https://github.com/tpope/vim-fugitive).

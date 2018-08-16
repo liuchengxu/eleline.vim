@@ -84,7 +84,7 @@ function! S_fugitive(...) abort
   let root = fnamemodify(dir, ':h')
   if index(roots, root) >= 0 | return '' | endif
 
-  let argv = has('win32') ? ['cmd', '/c', 'git branch'] : ['bash', '-c', 'git branch']
+  let argv = add(has('win32') ? ['cmd', '/c']: ['bash', '-c'], 'git branch')
   if exists('*job_start')
     let job = job_start(argv, {'out_io': 'pipe', 'err_io':'null',  'out_cb': function('s:branch')})
     if job_status(job) == 'fail' | return '' | endif
@@ -145,12 +145,15 @@ function! s:SetGitStatus(root, str)
   redraws!
 endfunction
 
-function! S_gitgutter()
-  if exists('b:gitgutter')
-    let l:summary = get(b:gitgutter, 'summary', [0, 0, 0])
-    if l:summary[0] != 0 || l:summary[1] != 0 || l:summary[2] != 0
-      return ' +'.l:summary[0].' ~'.l:summary[1].' -'.l:summary[2].' '
-    endif
+function! S_git()
+  let l:summary = [0, 0, 0]
+  if exists('b:sy')
+    let l:summary = b:sy.stats
+  elseif exists('b:gitgutter.summary')
+    let l:summary = b:gitgutter.summary
+  endif
+  if max(l:summary) > 0
+    return ' +'.l:summary[0].' ~'.l:summary[1].' -'.l:summary[2].' '
   endif
   return ''
 endfunction
@@ -162,29 +165,59 @@ function! S_gutentags()
   return ''
 endfunction
 
+" Inspired by: https://github.com/chemzqm/tstool.nvim
+let s:frames = ['◐', '◑', '◒', '◓']
+let s:frame_index = 0
+let s:lcn = s:frames[0]
+
+function! s:OnFrame(...) abort
+  let s:lcn = s:frames[s:frame_index]
+  let s:frame_index += 1
+  let s:frame_index = s:frame_index % len(s:frames)
+  " When the server is idle, LanguageClient#serverStatus() returns 0
+  if LanguageClient#serverStatus() == 0
+    call timer_stop(s:timer)
+    unlet s:timer
+    let s:lcn = s:frames[0]
+  endif
+  redraws!
+endfunction
+
+function! S_languageclient_neovim() abort
+  if !exists('g:LanguageClient_loaded') | return '' | endif
+  let l:black_list = ['startify', 'nerdtree', 'fugitiveblame', 'gitcommit']
+  if count(l:black_list, &filetype) | return '' | endif
+  if LanguageClient#serverStatus() == 1
+    if !exists('s:timer')
+      let s:timer = timer_start(80, function('s:OnFrame'), {'repeat': -1})
+    endif
+  endif
+  return s:lcn
+endfunction
+
 " https://github.com/liuchengxu/eleline.vim/wiki
-function! s:MyStatusLine()
+function! s:StatusLine()
   let l:buf_num = '%1* '.(has('gui_running')?'%n':'%{S_buf_num()}')." ❖ %{winnr()} %*"
   let l:paste = "%#paste#%{&paste?'PASTE ':''}%*"
   let l:fp = '%4* %{S_full_path()} %*'
   let l:branch = '%6*%{S_fugitive()}%*'
-  let l:gutter = '%{S_gitgutter()}'
+  let l:gutter = '%{S_git()}'
   let l:ale_e = '%#ale_error#%{S_ale_error()}%*'
   let l:ale_w = '%#ale_warning#%{S_ale_warning()}%*'
   let l:tags = '%{S_gutentags()}'
+  let l:lcn = '%{S_languageclient_neovim()}'
   if get(g:, 'eleline_slim', 0)
-    return l:buf_num.l:paste.l:fp.'%<'.l:branch.l:gutter.l:ale_e.l:ale_w.l:tags
-  else
-    let l:tot = '%2*[TOT:%{S_buf_total_num()}]%*'
-    let l:fs = '%3* %{S_file_size(@%)} %*'
-    let l:m_r_f = '%7* %m%r%y %*'
-    let l:pos = '%8* '.(s:font?"\ue0a1":'').'%l/%L:%c%V |'
-    let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM \":\"\")}"
-    let l:ff = '%{&ff} %*'
-    let l:pct = '%9* %P %*'
-    return l:buf_num.l:paste.l:tot.'%<'.l:fs.l:fp.l:branch.l:gutter.l:ale_e.l:ale_w.
-          \ '%='.l:tags.l:m_r_f.l:pos.l:enc.l:ff.l:pct
+    return l:buf_num.l:paste.l:fp.'%<'.l:branch.l:gutter.l:ale_e.l:ale_w.l:tags.l:lcn
   endif
+  let l:tot = '%2*[TOT:%{S_buf_total_num()}]%*'
+  let l:fs = '%3* %{S_file_size(@%)} %*'
+  let l:m_r_f = '%7* %m%r%y %*'
+  let l:pos = '%8* '.(s:font?"\ue0a1":'').'%l/%L:%c%V |'
+  let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM \":\"\")}"
+  let l:ff = '%{&ff} %*'
+  let l:pct = '%9* %P %*'
+  return l:buf_num.l:paste.l:tot.'%<'.l:fs.l:fp.l:branch.l:gutter.l:ale_e.l:ale_w.l:lcn
+        \ .'%='.l:tags.l:m_r_f.l:pos.l:enc.l:ff.l:pct
 endfunction
 
 let s:colors = {
@@ -259,28 +292,28 @@ endfunction
 " Note that the "%!" expression is evaluated in the context of the
 " current window and buffer, while %{} items are evaluated in the
 " context of the window that the statusline belongs to.
-function! SetMyStatusline(...) abort
+function! s:SetStatusline(...) abort
   call S_fugitive(1)
-  let &l:statusline = s:MyStatusLine()
+  let &l:statusline = s:StatusLine()
   " User-defined highlightings shoule be put after colorscheme command.
   call s:hi_statusline()
 endfunction
 
 if exists('*timer_start')
-  call timer_start(100, 'SetMyStatusline')
+  call timer_start(100, function('s:SetStatusline'))
 else
-  call SetMyStatusline()
+  call s:SetStatusline()
 endif
 
 augroup eleline
   autocmd!
+  autocmd User GitGutter,Startified,LanguageClientStarted call s:SetStatusline()
   " Change colors for insert mode
-  autocmd User GitGutter,Startified call SetMyStatusline()
   autocmd InsertLeave * call s:hi('User1' , 232 , 178  )
   autocmd InsertEnter,InsertChange * call s:InsertStatuslineColor(v:insertmode)
-  autocmd BufWinEnter,ShellCmdPost,BufWritePost * call SetMyStatusline()
-  autocmd FileChangedShellPost,ColorScheme * call SetMyStatusline()
-  autocmd FileReadPre,ShellCmdPost,FileWritePost * call SetMyStatusline()
+  autocmd BufWinEnter,ShellCmdPost,BufWritePost * call s:SetStatusline()
+  autocmd FileChangedShellPost,ColorScheme * call s:SetStatusline()
+  autocmd FileReadPre,ShellCmdPost,FileWritePost * call s:SetStatusline()
 augroup END
 
 let &cpoptions = s:save_cpo

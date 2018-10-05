@@ -52,7 +52,7 @@ endfunction
 function! S_ale_error()
   if exists('g:loaded_ale')
     let l:counts = ale#statusline#Count(bufnr(''))
-      return l:counts[0] == 0 ? '' : '•'.l:counts[0]
+      return l:counts[0] == 0 ? '' : '•'.l:counts[0].' '
   endif
   return ''
 endfunction
@@ -60,7 +60,7 @@ endfunction
 function! S_ale_warning()
   if exists('g:loaded_ale')
     let l:counts = ale#statusline#Count(bufnr(''))
-    return l:counts[1] == 0 ? '' : '•'.l:counts[1]
+    return l:counts[1] == 0 ? '' : '•'.l:counts[1].' '
   endif
   return ''
 endfunction
@@ -102,7 +102,7 @@ function! S_fugitive(...) abort
     let s:jobs[job_id] = root
   elseif exists('g:loaded_fugitive')
     let l:head = fugitive#head()
-    let l:symbol = s:font ? " \ue0a0 " : ' ⎇ '
+    let l:symbol = s:font ? " \ue0a0 " : ' Git:'
     return empty(l:head) ? '' : l:symbol.l:head . ' '
   endif
 
@@ -114,7 +114,7 @@ function! s:branch(channel, message) abort
     let l:job = ch_getjob(a:channel)
     let l:job_id = matchstr(string(l:job), '\d\+')
     if !has_key(s:jobs, l:job_id) | return | endif
-    let l:branch = substitute(a:message, '*', s:font ? " \ue0a0" : ' ⎇ ', '')
+    let l:branch = substitute(a:message, '*', s:font ? " \ue0a0" : ' Git:', '')
     call s:SetGitStatus(s:cwd, l:branch.' ')
     call remove(s:jobs, l:job_id)
   endif
@@ -125,7 +125,7 @@ function! s:JobHandler(job_id, data, event) dict abort
   if v:dying | return | endif
   let l:cur_branch = join(filter(self.stdout, 'v:val =~ "*"'))
   if !empty(l:cur_branch)
-    let l:branch = substitute(l:cur_branch, '*', s:font ? " \ue0a0" : ' ⎇ ', '')
+    let l:branch = substitute(l:cur_branch, '*', s:font ? " \ue0a0" : ' Git:', '')
     call s:SetGitStatus(self.cwd, l:branch.' ')
   else
     let errs = join(self.stderr)
@@ -136,8 +136,13 @@ endfunction
 
 function! s:SetGitStatus(root, str)
   let buf_list = filter(range(1, bufnr('$')), 'bufexists(v:val)')
+  let root = a:root
   for nr in buf_list
     let path = fnamemodify(bufname(nr), ':p')
+    if has('win32')
+      let path = substitute(path, '\', '/', 'g')
+      let root = substitute(root, '\', '/', 'g')
+    endif
     if match(path, a:root) >= 0
       call setbufvar(nr, 'eleline_branch', a:str)
     endif

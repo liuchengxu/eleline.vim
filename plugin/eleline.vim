@@ -67,7 +67,7 @@ endfunction
 
 function! s:is_tmp_file()
   if !empty(&buftype) | return 1 | endif
-  if &filetype ==# 'gitcommit' | return 1 | endif
+  if index(['startify', 'gitcommit'], &filetype) > -1 | return 1 | endif
   if expand('%:p') =~# '^/tmp' | return 1 | endif
 endfunction
 
@@ -200,6 +200,11 @@ function! S_languageclient_neovim() abort
   return s:lcn
 endfunction
 
+function! S_coc() abort
+  if s:is_tmp_file() | return '' | endif
+  return get(g:, 'coc_status', '')
+endfunction
+
 " https://github.com/liuchengxu/eleline.vim/wiki
 function! s:StatusLine()
   let l:buf_num = '%1* '.(has('gui_running')?'%n':'%{S_buf_num()}')." ❖ %{winnr()} %*"
@@ -211,8 +216,9 @@ function! s:StatusLine()
   let l:ale_w = '%#ale_warning#%{S_ale_warning()}%*'
   let l:tags = '%{S_gutentags()}'
   let l:lcn = '%{S_languageclient_neovim()}'
+  let l:coc = '%{S_coc()}'
   if get(g:, 'eleline_slim', 0)
-    return l:buf_num.l:paste.l:fp.'%<'.l:branch.l:gutter.l:ale_e.l:ale_w.l:tags.l:lcn
+    return l:buf_num.l:paste.l:fp.'%<'.l:branch.l:gutter.l:ale_e.l:ale_w.l:tags.l:lcn.l:coc
   endif
   let l:tot = '%2*[TOT:%{S_buf_total_num()}]%*'
   let l:fs = '%3* %{S_file_size(@%)} %*'
@@ -221,7 +227,7 @@ function! s:StatusLine()
   let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM \":\"\")}"
   let l:ff = '%{&ff} %*'
   let l:pct = '%9* %P %*'
-  return l:buf_num.l:paste.l:tot.'%<'.l:fs.l:fp.l:branch.l:gutter.l:ale_e.l:ale_w.l:lcn
+  return l:buf_num.l:paste.l:tot.'%<'.l:fs.l:fp.l:branch.l:gutter.l:ale_e.l:ale_w.l:lcn.l:coc
         \ .'%='.l:tags.l:m_r_f.l:pos.l:enc.l:ff.l:pct
 endfunction
 

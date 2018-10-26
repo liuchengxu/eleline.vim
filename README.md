@@ -6,6 +6,8 @@ Currenctly supported plugins:
 
 - [ale](https://github.com/w0rp/ale)
 
+- [coc.nvim](https://github.com/neoclide/coc.nvim)
+
 - [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
 
 - [vim-signify](https://github.com/mhinz/vim-signify)

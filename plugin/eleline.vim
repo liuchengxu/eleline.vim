@@ -203,11 +203,11 @@ function! s:StatusLine() abort
   endif
   let l:tot = s:def('ElelineTotalBuf')
   let l:fsize = '%#ElelineFsize# %{ElelineFsize(@%)} %*'
-  let l:m_r_f = '%7* %m%r%y %*'
-  let l:pos = '%8* '.(s:font?"\ue0a1":'').'%l/%L:%c%V |'
+  let l:m_r_f = '%#Eleline7# %m%r%y %*'
+  let l:pos = '%#Eleline8# '.(s:font?"\ue0a1":'').'%l/%L:%c%V |'
   let l:enc = ' %{&fenc != "" ? &fenc : &enc} | %{&bomb ? ",BOM " : ""}'
   let l:ff = '%{&ff} %*'
-  let l:pct = '%9* %P %*'
+  let l:pct = '%#Eleline9# %P %*'
   return l:prefix.l:tot.'%<'.l:fsize.l:common
         \ .'%='.l:m_r_f.l:pos.l:enc.l:ff.l:pct
 endfunction
@@ -216,7 +216,8 @@ let s:colors = {
             \   140 : '#af87d7', 149 : '#99cc66', 160 : '#d70000',
             \   171 : '#d75fd7', 178 : '#ffbb7d', 184 : '#ffe920',
             \   208 : '#ff8700', 232 : '#333300', 197 : '#cc0033',
-            \   214 : '#ffff66',
+            \   214 : '#ffff66', 124 : '#af3a03', 172 : '#b57614',
+            \   32  : '#3a81c3', 89  : '#6c3163',
             \
             \   235 : '#262626', 236 : '#303030', 237 : '#3a3a3a',
             \   238 : '#444444', 239 : '#4e4e4e', 240 : '#585858',
@@ -227,8 +228,16 @@ let s:colors = {
             \   253 : '#dadada', 254 : '#e4e4e4', 255 : '#eeeeee',
             \ }
 
+function! s:extract(group, what, ...) abort
+  if a:0 == 1
+    return synIDattr(synIDtrans(hlID(a:group)), a:what, a:1)
+  else
+    return synIDattr(synIDtrans(hlID(a:group)), a:what)
+  endif
+endfunction
+
 if !exists('g:eleline_background')
-  let s:normal_bg = synIDattr(synIDtrans(hlID('Normal')), "bg", 'cterm')
+  let s:normal_bg = s:extract('Normal', 'bg', 'cterm')
   if s:normal_bg >= 233 && s:normal_bg <= 243
     let s:bg = s:normal_bg
   else
@@ -246,10 +255,14 @@ endif
 function! s:hi(group, dark, light, ...)
   let [fg, bg] = &bg ==# 'dark' ? a:dark : a:light
 
-  if &bg ==# 'light'
-    " Bug of vim. fg -> bg
-    let ctermbg = synIDattr(synIDtrans(hlID('StatusLine')), 'fg', 'cterm')
-    let guibg = synIDattr(synIDtrans(hlID('StatusLine')), 'fg', 'gui')
+  if empty(bg) && &bg ==# 'light'
+    if s:extract('StatusLine', 'reverse')
+      let ctermbg = s:extract('StatusLine', 'fg', 'cterm')
+      let guibg = s:extract('StatusLine', 'fg', 'gui')
+    else
+      let ctermbg = s:extract('StatusLine', 'bg', 'cterm')
+      let guibg = s:extract('StatusLine', 'bg', 'gui')
+    endif
     execute printf('hi %s ctermfg=%d guifg=%s ctermbg=%d guibg=%s',
                   \ a:group, fg, s:colors[fg], ctermbg, guibg)
   else
@@ -267,14 +280,18 @@ function! s:hi_statusline()
   call s:hi('ElelinePaste'      , [232 , 178]     , [232     , 178]    , 'bold')
   call s:hi('ElelineFsize'      , [250 , s:bg+6], [235, ''] )
   call s:hi('ElelineCurFname'   , [171 , s:bg+4], [171, '']   , 'bold' )
-  call s:hi('ElelineGitBranch'  , [184 , s:bg+2], [184, '']   , 'bold' )
-  call s:hi('ElelineGitStatus'  , [208 , s:bg+2], [184, ''])
+  call s:hi('ElelineGitBranch'  , [184 , s:bg+2], [89, '']   , 'bold' )
+  call s:hi('ElelineGitStatus'  , [208 , s:bg+2], [89, ''])
   call s:hi('ElelineError'      , [197 , s:bg+2], [197, ''])
   call s:hi('ElelineWarning'    , [214 , s:bg+2], [214, ''])
 
-  call s:hi('User7'      , [249 , s:bg+3], [237, ''] )
-  call s:hi('User8'      , [250 , s:bg+4], [238, ''] )
-  call s:hi('User9'      , [251 , s:bg+5], [239, ''] )
+  if &bg ==# 'dark'
+    call s:hi('StatusLine' , [140 , s:bg+2], [140, ''] , 'none')
+  endif
+
+  call s:hi('Eleline7'      , [249 , s:bg+3], [237, ''] )
+  call s:hi('Eleline8'      , [250 , s:bg+4], [238, ''] )
+  call s:hi('Eleline9'      , [251 , s:bg+5], [239, ''] )
 endfunction
 
 function! s:InsertStatuslineColor(mode)

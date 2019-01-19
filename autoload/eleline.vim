@@ -17,7 +17,6 @@ function! s:OnFrame(...) abort
 endfunction
 
 function! eleline#LanguageClientNeovim() abort
-  if !exists('g:LanguageClient_loaded') | return '' | endif
   let l:black_list = ['startify', 'nerdtree', 'fugitiveblame', 'gitcommit']
   if count(l:black_list, &filetype) | return '' | endif
   if LanguageClient#serverStatus() == 1

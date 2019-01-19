@@ -137,8 +137,8 @@ function! s:JobHandler(job_id, data, event) dict abort
     let l:branch = substitute(l:cur_branch, '*', s:font ? "  \ue0a0" : ' Git:', '')
     call s:SetGitBranch(self.cwd, l:branch.' ')
   else
-    let errs = join(self.stderr)
-    if !empty(errs) | echoerr errs | endif
+    let err = join(self.stderr)
+    if !empty(err) | echoerr err | endif
   endif
   call remove(s:jobs, a:job_id)
 endfunction
@@ -172,14 +172,12 @@ function! ElelineGitStatus()
   return ''
 endfunction
 
-function! S_gutentags()
-  if exists('b:gutentags_files')
-    return gutentags#statusline()
-  endif
-  return ''
+function! ElelineLCN() abort
+  if !exists('g:LanguageClient_loaded') | return '' | endif
+  return eleline#LanguageClientNeovim()
 endfunction
 
-function! S_coc() abort
+function! ElelineCoc() abort
   if s:is_tmp_file() | return '' | endif
   return get(g:, 'coc_status', '')
 endfunction
@@ -196,9 +194,9 @@ function! s:StatusLine() abort
   let l:status = s:def('ElelineGitStatus')
   let l:error = s:def('ElelineError')
   let l:warning = s:def('ElelineWarning')
-  let l:tags = '%{S_gutentags()}'
-  let l:lcn = '%{eleline#LanguageClientNeovim()}'
-  let l:coc = '%{S_coc()}'
+  let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""} '
+  let l:lcn = '%{ElelineLCN()}'
+  let l:coc = '%{ElelineCoc()}'
   let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc
   if get(g:, 'eleline_slim', 0)
     return l:bufnr_winnr.l:paste.'%<'.l:common

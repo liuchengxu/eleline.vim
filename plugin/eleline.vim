@@ -16,14 +16,13 @@ set cpoptions&vim
 let s:font = get(g:, 'eleline_powerline_fonts', get(g:, 'airline_powerline_fonts', 0))
 let s:jobs = {}
 
-function! s:circled_num(num) abort
-  return nr2char(9311 + a:num)
-endfunction
-
 function! ElelineBufnrWinnr() abort
   if has('gui_running')
     let l:bufnr = '%n'
   else
+    function! s:circled_num(num) abort
+      return nr2char(9311 + a:num)
+    endfunction
     let l:bufnr = bufnr('%')
     let l:bufnr = l:bufnr > 20 ? l:bufnr : s:circled_num(l:bufnr).' '
   endif
@@ -95,7 +94,7 @@ function! ElelineGitBranch(...) abort
 
   let argv = add(has('win32') ? ['cmd', '/c']: ['bash', '-c'], 'git branch')
   if exists('*job_start')
-    let job = job_start(argv, {'out_io': 'pipe', 'err_io':'null',  'out_cb': function('s:branch')})
+    let job = job_start(argv, {'out_io': 'pipe', 'err_io':'null',  'out_cb': function('s:out_cb')})
     if job_status(job) == 'fail' | return '' | endif
     let s:cwd = root
     let job_id = matchstr(job, '\d\+')
@@ -105,7 +104,7 @@ function! ElelineGitBranch(...) abort
       \ 'cwd': root,
       \ 'stdout_buffered': v:true,
       \ 'stderr_buffered': v:true,
-      \ 'on_exit': function('s:JobHandler')
+      \ 'on_exit': function('s:on_exit')
       \})
     if job_id == 0 || job_id == -1 | return '' | endif
     let s:jobs[job_id] = root
@@ -118,7 +117,7 @@ function! ElelineGitBranch(...) abort
   return ''
 endfunction
 
-function! s:branch(channel, message) abort
+function! s:out_cb(channel, message) abort
   if a:message =~ "^* "
     let l:job = ch_getjob(a:channel)
     let l:job_id = matchstr(string(l:job), '\d\+')
@@ -129,7 +128,7 @@ function! s:branch(channel, message) abort
   endif
 endfunction
 
-function! s:JobHandler(job_id, data, event) dict abort
+function! s:on_exit(job_id, data, _event) dict abort
   if !has_key(s:jobs, a:job_id) | return | endif
   if v:dying | return | endif
   let l:cur_branch = join(filter(self.stdout, 'v:val =~ "*"'))

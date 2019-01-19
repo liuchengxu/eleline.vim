@@ -263,27 +263,27 @@ function! s:hi(group, dark, light, ...)
       let ctermbg = s:extract('StatusLine', 'bg', 'cterm')
       let guibg = s:extract('StatusLine', 'bg', 'gui')
     endif
-    execute printf('hi %s ctermfg=%d guifg=%s ctermbg=%d guibg=%s',
-                  \ a:group, fg, s:colors[fg], ctermbg, guibg)
   else
-    execute printf('hi %s ctermfg=%d guifg=%s ctermbg=%d guibg=%s',
-                  \ a:group, fg, s:colors[fg], bg, s:colors[bg])
+    let ctermbg = bg
+    let guibg = s:colors[bg]
   endif
+  execute printf('hi %s ctermfg=%d guifg=%s ctermbg=%d guibg=%s',
+                \ a:group, fg, s:colors[fg], ctermbg, guibg)
   if a:0 == 1
     execute printf('hi %s cterm=%s gui=%s', a:group, a:1, a:1)
   endif
 endfunction
 
 function! s:hi_statusline()
-  call s:hi('ElelineBufnrWinnr' , [232 , 178]     , [232     , 178]  )
-  call s:hi('ElelineTotalBuf'   , [178 , s:bg+8]  , [240     , ''] )
-  call s:hi('ElelinePaste'      , [232 , 178]     , [232     , 178]    , 'bold')
-  call s:hi('ElelineFsize'      , [250 , s:bg+6], [235, ''] )
-  call s:hi('ElelineCurFname'   , [171 , s:bg+4], [171, '']   , 'bold' )
-  call s:hi('ElelineGitBranch'  , [184 , s:bg+2], [89, '']   , 'bold' )
-  call s:hi('ElelineGitStatus'  , [208 , s:bg+2], [89, ''])
-  call s:hi('ElelineError'      , [197 , s:bg+2], [197, ''])
-  call s:hi('ElelineWarning'    , [214 , s:bg+2], [214, ''])
+  call s:hi('ElelineBufnrWinnr' , [232 , 178]    , [232 , 178]  )
+  call s:hi('ElelineTotalBuf'   , [178 , s:bg+8] , [240 , ''] )
+  call s:hi('ElelinePaste'      , [232 , 178]    , [232 , 178]    , 'bold')
+  call s:hi('ElelineFsize'      , [250 , s:bg+6] , [235 , ''] )
+  call s:hi('ElelineCurFname'   , [171 , s:bg+4] , [171 , '']     , 'bold' )
+  call s:hi('ElelineGitBranch'  , [184 , s:bg+2] , [89  , '']     , 'bold' )
+  call s:hi('ElelineGitStatus'  , [208 , s:bg+2] , [89  , ''])
+  call s:hi('ElelineError'      , [197 , s:bg+2] , [197 , ''])
+  call s:hi('ElelineWarning'    , [214 , s:bg+2] , [214 , ''])
 
   if &bg ==# 'dark'
     call s:hi('StatusLine' , [140 , s:bg+2], [140, ''] , 'none')

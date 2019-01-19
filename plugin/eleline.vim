@@ -37,7 +37,7 @@ function! ElelinePaste() abort
   return &paste ? 'PASTE ' : ''
 endfunction
 
-function! ElelineFsize(f)
+function! ElelineFsize(f) abort
   let l:size = getfsize(expand(a:f))
   if l:size == 0 || l:size == -1 || l:size == -2
     return ''
@@ -53,11 +53,11 @@ function! ElelineFsize(f)
   endif
 endfunction
 
-function! ElelineCurFname()
+function! ElelineCurFname() abort
   return &filetype ==# 'startify' ? '' : '  '.expand('%:p:t').' '
 endfunction
 
-function! ElelineError()
+function! ElelineError() abort
   if exists('g:loaded_ale')
     let l:counts = ale#statusline#Count(bufnr(''))
       return l:counts[0] == 0 ? '' : '•'.l:counts[0].' '
@@ -65,7 +65,7 @@ function! ElelineError()
   return ''
 endfunction
 
-function! ElelineWarning()
+function! ElelineWarning() abort
   if exists('g:loaded_ale')
     let l:counts = ale#statusline#Count(bufnr(''))
     return l:counts[1] == 0 ? '' : '•'.l:counts[1].' '
@@ -73,7 +73,7 @@ function! ElelineWarning()
   return ''
 endfunction
 
-function! s:is_tmp_file()
+function! s:is_tmp_file() abort
   if !empty(&buftype) | return 1 | endif
   if index(['startify', 'gitcommit'], &filetype) > -1 | return 1 | endif
   if expand('%:p') =~# '^/tmp' | return 1 | endif
@@ -142,7 +142,7 @@ function! s:on_exit(job_id, data, _event) dict abort
   call remove(s:jobs, a:job_id)
 endfunction
 
-function! s:SetGitBranch(root, str)
+function! s:SetGitBranch(root, str) abort
   let buf_list = filter(range(1, bufnr('$')), 'bufexists(v:val)')
   let root = a:root
   for nr in buf_list
@@ -158,7 +158,7 @@ function! s:SetGitBranch(root, str)
   redraws!
 endfunction
 
-function! ElelineGitStatus()
+function! ElelineGitStatus() abort
   let l:summary = [0, 0, 0]
   if exists('b:sy')
     let l:summary = b:sy.stats
@@ -252,7 +252,7 @@ if has('termguicolors') && &termguicolors
   let s:bg = 235
 endif
 
-function! s:hi(group, dark, light, ...)
+function! s:hi(group, dark, light, ...) abort
   let [fg, bg] = &bg ==# 'dark' ? a:dark : a:light
 
   if empty(bg) && &bg ==# 'light'
@@ -274,7 +274,7 @@ function! s:hi(group, dark, light, ...)
   endif
 endfunction
 
-function! s:hi_statusline()
+function! s:hi_statusline() abort
   call s:hi('ElelineBufnrWinnr' , [232 , 178]    , [232 , 178]  )
   call s:hi('ElelineTotalBuf'   , [178 , s:bg+8] , [240 , ''] )
   call s:hi('ElelinePaste'      , [232 , 178]    , [232 , 178]    , 'bold')
@@ -294,7 +294,7 @@ function! s:hi_statusline()
   call s:hi('Eleline9'      , [251 , s:bg+5], [239, ''] )
 endfunction
 
-function! s:InsertStatuslineColor(mode)
+function! s:InsertStatuslineColor(mode) abort
   if a:mode == 'i'
     call s:hi('ElelineBufnrWinnr' , [251, s:bg+8] , [251, s:bg+8])
   elseif a:mode == 'r'

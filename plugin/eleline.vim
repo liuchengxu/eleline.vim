@@ -54,7 +54,7 @@ function! ElelineFsize(f)
 endfunction
 
 function! ElelineCurFname()
-  return &filetype ==# 'startify' ? '' : ' '.expand('%:p:t').' '
+  return &filetype ==# 'startify' ? '' : '  '.expand('%:p:t').' '
 endfunction
 
 function! ElelineError()

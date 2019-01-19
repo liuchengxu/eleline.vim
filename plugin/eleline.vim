@@ -179,36 +179,6 @@ function! S_gutentags()
   return ''
 endfunction
 
-" Inspired by: https://github.com/chemzqm/tstool.nvim
-let s:frames = ['◐', '◑', '◒', '◓']
-let s:frame_index = 0
-let s:lcn = s:frames[0]
-
-function! s:OnFrame(...) abort
-  let s:lcn = s:frames[s:frame_index]
-  let s:frame_index += 1
-  let s:frame_index = s:frame_index % len(s:frames)
-  " When the server is idle, LanguageClient#serverStatus() returns 0
-  if LanguageClient#serverStatus() == 0
-    call timer_stop(s:timer)
-    unlet s:timer
-    let s:lcn = s:frames[0]
-  endif
-  redraws!
-endfunction
-
-function! S_languageclient_neovim() abort
-  if !exists('g:LanguageClient_loaded') | return '' | endif
-  let l:black_list = ['startify', 'nerdtree', 'fugitiveblame', 'gitcommit']
-  if count(l:black_list, &filetype) | return '' | endif
-  if LanguageClient#serverStatus() == 1
-    if !exists('s:timer')
-      let s:timer = timer_start(80, function('s:OnFrame'), {'repeat': -1})
-    endif
-  endif
-  return s:lcn
-endfunction
-
 function! S_coc() abort
   if s:is_tmp_file() | return '' | endif
   return get(g:, 'coc_status', '')
@@ -227,7 +197,7 @@ function! s:StatusLine() abort
   let l:error = s:def('ElelineError')
   let l:warning = s:def('ElelineWarning')
   let l:tags = '%{S_gutentags()}'
-  let l:lcn = '%{S_languageclient_neovim()}'
+  let l:lcn = '%{eleline#LanguageClientNeovim()}'
   let l:coc = '%{S_coc()}'
   let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc
   if get(g:, 'eleline_slim', 0)

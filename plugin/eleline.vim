@@ -29,7 +29,7 @@ function! ElelineBufnrWinnr() abort
   return '  '.l:bufnr." ❖ ".winnr().' '
 endfunction
 
-function! ElelineBufNr() abort
+function! ElelineTotalBuf() abort
   return '[TOT:'.len(filter(range(1, bufnr('$')), 'buflisted(v:val)')).']'
 endfunction
 
@@ -196,19 +196,20 @@ function! s:StatusLine() abort
   let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""} '
   let l:lcn = '%{ElelineLCN()}'
   let l:coc = '%{ElelineCoc()}'
+  let l:prefix = l:bufnr_winnr.l:paste
   let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc
   if get(g:, 'eleline_slim', 0)
-    return l:bufnr_winnr.l:paste.'%<'.l:common
+    return l:prefix.'%<'.l:common
   endif
-  let l:tot = s:def('ElelineBufNr')
+  let l:tot = s:def('ElelineTotalBuf')
   let l:fsize = '%#ElelineFsize# %{ElelineFsize(@%)} %*'
   let l:m_r_f = '%7* %m%r%y %*'
   let l:pos = '%8* '.(s:font?"\ue0a1":'').'%l/%L:%c%V |'
   let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM \":\"\")}"
   let l:ff = '%{&ff} %*'
   let l:pct = '%9* %P %*'
-  return l:bufnr_winnr.l:paste.l:tot.'%<'.l:fsize.l:common
-        \ .'%='.l:tags.l:m_r_f.l:pos.l:enc.l:ff.l:pct
+  return l:prefix.l:tot.'%<'.l:fsize.l:common
+        \ .'%='.l:m_r_f.l:pos.l:enc.l:ff.l:pct
 endfunction
 
 let s:colors = {
@@ -262,14 +263,14 @@ endfunction
 
 function! s:hi_statusline()
   call s:hi('ElelineBufnrWinnr' , [232 , 178]     , [232     , 178]  )
-  call s:hi('ElelineBufNr'      , [178 , s:bg+8]  , [240     , ''] )
+  call s:hi('ElelineTotalBuf'   , [178 , s:bg+8]  , [240     , ''] )
   call s:hi('ElelinePaste'      , [232 , 178]     , [232     , 178]    , 'bold')
-  call s:hi('ElelineFsize'      , [250  , s:bg+6], [235, ''] )
-  call s:hi('ElelineCurFname'   , [171  , s:bg+4], [171, '']   , 'bold' )
-  call s:hi('ElelineGitBranch'  , [184  , s:bg+2], [184, '']   , 'bold' )
-  call s:hi('ElelineGitStatus'  , [208  , s:bg+2], [184, ''])
-  call s:hi('ElelineError'      , [197  , s:bg+2], [197, ''])
-  call s:hi('ElelineWarning'    , [214  , s:bg+2], [214, ''])
+  call s:hi('ElelineFsize'      , [250 , s:bg+6], [235, ''] )
+  call s:hi('ElelineCurFname'   , [171 , s:bg+4], [171, '']   , 'bold' )
+  call s:hi('ElelineGitBranch'  , [184 , s:bg+2], [184, '']   , 'bold' )
+  call s:hi('ElelineGitStatus'  , [208 , s:bg+2], [184, ''])
+  call s:hi('ElelineError'      , [197 , s:bg+2], [197, ''])
+  call s:hi('ElelineWarning'    , [214 , s:bg+2], [214, ''])
 
   call s:hi('User5'           , [208 , s:bg+3], [208, ''] )
   call s:hi('User7'      , [249 , s:bg+3], [237, ''] )
@@ -290,7 +291,7 @@ endfunction
 " Note that the "%!" expression is evaluated in the context of the
 " current window and buffer, while %{} items are evaluated in the
 " context of the window that the statusline belongs to.
-function! s:SetStatusline(...) abort
+function! s:SetStatusLine(...) abort
   call ElelineGitBranch(1)
   let &l:statusline = s:StatusLine()
   " User-defined highlightings shoule be put after colorscheme command.
@@ -298,20 +299,20 @@ function! s:SetStatusline(...) abort
 endfunction
 
 if exists('*timer_start')
-  call timer_start(100, function('s:SetStatusline'))
+  call timer_start(100, function('s:SetStatusLine'))
 else
-  call s:SetStatusline()
+  call s:SetStatusLine()
 endif
 
 augroup eleline
   autocmd!
-  autocmd User GitGutter,Startified,LanguageClientStarted call s:SetStatusline()
+  autocmd User GitGutter,Startified,LanguageClientStarted call s:SetStatusLine()
   " Change colors for insert mode
   autocmd InsertLeave * call s:hi('ElelineBufnrWinnr', [232, 178], [232, 178])
   autocmd InsertEnter,InsertChange * call s:InsertStatuslineColor(v:insertmode)
-  autocmd BufWinEnter,ShellCmdPost,BufWritePost * call s:SetStatusline()
-  autocmd FileChangedShellPost,ColorScheme * call s:SetStatusline()
-  autocmd FileReadPre,ShellCmdPost,FileWritePost * call s:SetStatusline()
+  autocmd BufWinEnter,ShellCmdPost,BufWritePost * call s:SetStatusLine()
+  autocmd FileChangedShellPost,ColorScheme * call s:SetStatusLine()
+  autocmd FileReadPre,ShellCmdPost,FileWritePost * call s:SetStatusLine()
 augroup END
 
 let &cpoptions = s:save_cpo

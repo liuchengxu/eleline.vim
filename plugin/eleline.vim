@@ -272,7 +272,6 @@ function! s:hi_statusline()
   call s:hi('ElelineError'      , [197 , s:bg+2], [197, ''])
   call s:hi('ElelineWarning'    , [214 , s:bg+2], [214, ''])
 
-  call s:hi('User5'           , [208 , s:bg+3], [208, ''] )
   call s:hi('User7'      , [249 , s:bg+3], [237, ''] )
   call s:hi('User8'      , [250 , s:bg+4], [238, ''] )
   call s:hi('User9'      , [251 , s:bg+5], [239, ''] )

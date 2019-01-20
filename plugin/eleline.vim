@@ -16,20 +16,28 @@ set cpoptions&vim
 let s:font = get(g:, 'eleline_powerline_fonts', get(g:, 'airline_powerline_fonts', 0))
 let s:jobs = {}
 
-function! s:circled_num(num)
-  return nr2char(9311 + a:num)
+function! ElelineBufnrWinnr() abort
+  if has('gui_running')
+    let l:bufnr = '%n'
+  else
+    function! s:circled_num(num) abort
+      return nr2char(9311 + a:num)
+    endfunction
+    let l:bufnr = bufnr('%')
+    let l:bufnr = l:bufnr > 20 ? l:bufnr : s:circled_num(l:bufnr).' '
+  endif
+  return '  '.l:bufnr." ❖ ".winnr().' '
 endfunction
 
-function! S_buf_num()
-  let l:nr = bufnr('%')
-  return l:nr > 20 ? l:nr : s:circled_num(l:nr).' '
+function! ElelineTotalBuf() abort
+  return '[TOT:'.len(filter(range(1, bufnr('$')), 'buflisted(v:val)')).']'
 endfunction
 
-function! S_buf_total_num()
-  return len(filter(range(1, bufnr('$')), 'buflisted(v:val)'))
+function! ElelinePaste() abort
+  return &paste ? 'PASTE ' : ''
 endfunction
 
-function! S_file_size(f)
+function! ElelineFsize(f) abort
   let l:size = getfsize(expand(a:f))
   if l:size == 0 || l:size == -1 || l:size == -2
     return ''
@@ -45,11 +53,11 @@ function! S_file_size(f)
   endif
 endfunction
 
-function! S_full_path()
-  return &filetype ==# 'startify' ? '' : expand('%:p:t')
+function! ElelineCurFname() abort
+  return &filetype ==# 'startify' ? '' : '  '.expand('%:p:t').' '
 endfunction
 
-function! S_ale_error()
+function! ElelineError() abort
   if exists('g:loaded_ale')
     let l:counts = ale#statusline#Count(bufnr(''))
       return l:counts[0] == 0 ? '' : '•'.l:counts[0].' '
@@ -57,7 +65,7 @@ function! S_ale_error()
   return ''
 endfunction
 
-function! S_ale_warning()
+function! ElelineWarning() abort
   if exists('g:loaded_ale')
     let l:counts = ale#statusline#Count(bufnr(''))
     return l:counts[1] == 0 ? '' : '•'.l:counts[1].' '
@@ -65,14 +73,14 @@ function! S_ale_warning()
   return ''
 endfunction
 
-function! s:is_tmp_file()
+function! s:is_tmp_file() abort
   if !empty(&buftype) | return 1 | endif
   if index(['startify', 'gitcommit'], &filetype) > -1 | return 1 | endif
   if expand('%:p') =~# '^/tmp' | return 1 | endif
 endfunction
 
 " Reference: https://github.com/chemzqm/vimrc/blob/master/statusline.vim
-function! S_fugitive(...) abort
+function! ElelineGitBranch(...) abort
   if s:is_tmp_file() | return '' | endif
   let reload = get(a:, 1, 0) == 1
   if exists('b:eleline_branch') && !reload | return b:eleline_branch | endif
@@ -86,7 +94,7 @@ function! S_fugitive(...) abort
 
   let argv = add(has('win32') ? ['cmd', '/c']: ['bash', '-c'], 'git branch')
   if exists('*job_start')
-    let job = job_start(argv, {'out_io': 'pipe', 'err_io':'null',  'out_cb': function('s:branch')})
+    let job = job_start(argv, {'out_io': 'pipe', 'err_io':'null',  'out_cb': function('s:out_cb')})
     if job_status(job) == 'fail' | return '' | endif
     let s:cwd = root
     let job_id = matchstr(job, '\d\+')
@@ -96,7 +104,7 @@ function! S_fugitive(...) abort
       \ 'cwd': root,
       \ 'stdout_buffered': v:true,
       \ 'stderr_buffered': v:true,
-      \ 'on_exit': function('s:JobHandler')
+      \ 'on_exit': function('s:on_exit')
       \})
     if job_id == 0 || job_id == -1 | return '' | endif
     let s:jobs[job_id] = root
@@ -109,32 +117,32 @@ function! S_fugitive(...) abort
   return ''
 endfunction
 
-function! s:branch(channel, message) abort
+function! s:out_cb(channel, message) abort
   if a:message =~ "^* "
     let l:job = ch_getjob(a:channel)
     let l:job_id = matchstr(string(l:job), '\d\+')
     if !has_key(s:jobs, l:job_id) | return | endif
-    let l:branch = substitute(a:message, '*', s:font ? " \ue0a0" : ' Git:', '')
-    call s:SetGitStatus(s:cwd, l:branch.' ')
+    let l:branch = substitute(a:message, '*', s:font ? "  \ue0a0" : ' Git:', '')
+    call s:SetGitBranch(s:cwd, l:branch.' ')
     call remove(s:jobs, l:job_id)
   endif
 endfunction
 
-function! s:JobHandler(job_id, data, event) dict abort
+function! s:on_exit(job_id, data, _event) dict abort
   if !has_key(s:jobs, a:job_id) | return | endif
   if v:dying | return | endif
   let l:cur_branch = join(filter(self.stdout, 'v:val =~ "*"'))
   if !empty(l:cur_branch)
-    let l:branch = substitute(l:cur_branch, '*', s:font ? " \ue0a0" : ' Git:', '')
-    call s:SetGitStatus(self.cwd, l:branch.' ')
+    let l:branch = substitute(l:cur_branch, '*', s:font ? "  \ue0a0" : ' Git:', '')
+    call s:SetGitBranch(self.cwd, l:branch.' ')
   else
-    let errs = join(self.stderr)
-    if !empty(errs) | echoerr errs | endif
+    let err = join(self.stderr)
+    if !empty(err) | echoerr err | endif
   endif
   call remove(s:jobs, a:job_id)
 endfunction
 
-function! s:SetGitStatus(root, str)
+function! s:SetGitBranch(root, str) abort
   let buf_list = filter(range(1, bufnr('$')), 'bufexists(v:val)')
   let root = a:root
   for nr in buf_list
@@ -150,7 +158,7 @@ function! s:SetGitStatus(root, str)
   redraws!
 endfunction
 
-function! S_git()
+function! ElelineGitStatus() abort
   let l:summary = [0, 0, 0]
   if exists('b:sy')
     let l:summary = b:sy.stats
@@ -163,79 +171,53 @@ function! S_git()
   return ''
 endfunction
 
-function! S_gutentags()
-  if exists('b:gutentags_files')
-    return gutentags#statusline()
-  endif
-  return ''
-endfunction
-
-" Inspired by: https://github.com/chemzqm/tstool.nvim
-let s:frames = ['◐', '◑', '◒', '◓']
-let s:frame_index = 0
-let s:lcn = s:frames[0]
-
-function! s:OnFrame(...) abort
-  let s:lcn = s:frames[s:frame_index]
-  let s:frame_index += 1
-  let s:frame_index = s:frame_index % len(s:frames)
-  " When the server is idle, LanguageClient#serverStatus() returns 0
-  if LanguageClient#serverStatus() == 0
-    call timer_stop(s:timer)
-    unlet s:timer
-    let s:lcn = s:frames[0]
-  endif
-  redraws!
-endfunction
-
-function! S_languageclient_neovim() abort
+function! ElelineLCN() abort
   if !exists('g:LanguageClient_loaded') | return '' | endif
-  let l:black_list = ['startify', 'nerdtree', 'fugitiveblame', 'gitcommit']
-  if count(l:black_list, &filetype) | return '' | endif
-  if LanguageClient#serverStatus() == 1
-    if !exists('s:timer')
-      let s:timer = timer_start(80, function('s:OnFrame'), {'repeat': -1})
-    endif
-  endif
-  return s:lcn
+  return eleline#LanguageClientNeovim()
 endfunction
 
-function! S_coc() abort
+function! ElelineCoc() abort
   if s:is_tmp_file() | return '' | endif
   return get(g:, 'coc_status', '')
 endfunction
 
 " https://github.com/liuchengxu/eleline.vim/wiki
-function! s:StatusLine()
-  let l:buf_num = '%1* '.(has('gui_running')?'%n':'%{S_buf_num()}')." ❖ %{winnr()} %*"
-  let l:paste = "%#paste#%{&paste?'PASTE ':''}%*"
-  let l:fp = '%4* %{S_full_path()} %*'
-  let l:branch = '%6*%{S_fugitive()}%*'
-  let l:gutter = '%{S_git()}'
-  let l:ale_e = '%#ale_error#%{S_ale_error()}%*'
-  let l:ale_w = '%#ale_warning#%{S_ale_warning()}%*'
-  let l:tags = '%{S_gutentags()}'
-  let l:lcn = '%{S_languageclient_neovim()}'
-  let l:coc = '%{S_coc()}'
+function! s:StatusLine() abort
+  function! s:def(fn) abort
+    return printf('%%#%s#%%{%s()}%%*', a:fn, a:fn)
+  endfunction
+  let l:bufnr_winnr = s:def('ElelineBufnrWinnr')
+  let l:paste = s:def('ElelinePaste')
+  let l:curfname = s:def('ElelineCurFname')
+  let l:branch = s:def('ElelineGitBranch')
+  let l:status = s:def('ElelineGitStatus')
+  let l:error = s:def('ElelineError')
+  let l:warning = s:def('ElelineWarning')
+  let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""} '
+  let l:lcn = '%{ElelineLCN()}'
+  let l:coc = '%{ElelineCoc()}'
+  let l:prefix = l:bufnr_winnr.l:paste
+  let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc
   if get(g:, 'eleline_slim', 0)
-    return l:buf_num.l:paste.l:fp.'%<'.l:branch.l:gutter.l:ale_e.l:ale_w.l:tags.l:lcn.l:coc
+    return l:prefix.'%<'.l:common
   endif
-  let l:tot = '%2*[TOT:%{S_buf_total_num()}]%*'
-  let l:fs = '%3* %{S_file_size(@%)} %*'
-  let l:m_r_f = '%7* %m%r%y %*'
-  let l:pos = '%8* '.(s:font?"\ue0a1":'').'%l/%L:%c%V |'
-  let l:enc = " %{''.(&fenc!=''?&fenc:&enc).''} | %{(&bomb?\",BOM \":\"\")}"
+  let l:tot = s:def('ElelineTotalBuf')
+  let l:fsize = '%#ElelineFsize# %{ElelineFsize(@%)} %*'
+  let l:m_r_f = '%#Eleline7# %m%r%y %*'
+  let l:pos = '%#Eleline8# '.(s:font?"\ue0a1":'').'%l/%L:%c%V |'
+  let l:enc = ' %{&fenc != "" ? &fenc : &enc} | %{&bomb ? ",BOM " : ""}'
   let l:ff = '%{&ff} %*'
-  let l:pct = '%9* %P %*'
-  return l:buf_num.l:paste.l:tot.'%<'.l:fs.l:fp.l:branch.l:gutter.l:ale_e.l:ale_w.l:lcn.l:coc
-        \ .'%='.l:tags.l:m_r_f.l:pos.l:enc.l:ff.l:pct
+  let l:pct = '%#Eleline9# %P %*'
+  return l:prefix.l:tot.'%<'.l:fsize.l:common
+        \ .'%='.l:m_r_f.l:pos.l:enc.l:ff.l:pct
 endfunction
 
 let s:colors = {
             \   140 : '#af87d7', 149 : '#99cc66', 160 : '#d70000',
             \   171 : '#d75fd7', 178 : '#ffbb7d', 184 : '#ffe920',
             \   208 : '#ff8700', 232 : '#333300', 197 : '#cc0033',
-            \   214 : '#ffff66',
+            \   214 : '#ffff66', 124 : '#af3a03', 172 : '#b57614',
+            \   32  : '#3a81c3', 89  : '#6c3163',
             \
             \   235 : '#262626', 236 : '#303030', 237 : '#3a3a3a',
             \   238 : '#444444', 239 : '#4e4e4e', 240 : '#585858',
@@ -246,16 +228,16 @@ let s:colors = {
             \   253 : '#dadada', 254 : '#e4e4e4', 255 : '#eeeeee',
             \ }
 
-function! s:hi(group, fg, bg, ...)
-  execute printf('hi %s ctermfg=%d guifg=%s ctermbg=%d guibg=%s',
-                \ a:group, a:fg, s:colors[a:fg], a:bg, s:colors[a:bg])
+function! s:extract(group, what, ...) abort
   if a:0 == 1
-    execute printf('hi %s cterm=%s gui=%s', a:group, a:1, a:1)
+    return synIDattr(synIDtrans(hlID(a:group)), a:what, a:1)
+  else
+    return synIDattr(synIDtrans(hlID(a:group)), a:what)
   endif
 endfunction
 
 if !exists('g:eleline_background')
-  let s:normal_bg = synIDattr(synIDtrans(hlID('Normal')), "bg", 'cterm')
+  let s:normal_bg = s:extract('Normal', 'bg', 'cterm')
   if s:normal_bg >= 233 && s:normal_bg <= 243
     let s:bg = s:normal_bg
   else
@@ -270,61 +252,83 @@ if has('termguicolors') && &termguicolors
   let s:bg = 235
 endif
 
-function! s:hi_statusline()
-  call s:hi('User1'      , 232 , 178  )
-  call s:hi('paste'      , 232 , 178    , 'bold')
-  call s:hi('User2'      , 178 , s:bg+8 )
-  call s:hi('User3'      , 250 , s:bg+6 )
-  call s:hi('User4'      , 171 , s:bg+4 , 'bold' )
-  call s:hi('User5'      , 208 , s:bg+3 )
-  call s:hi('User6'      , 184 , s:bg+2 , 'bold' )
+function! s:hi(group, dark, light, ...) abort
+  let [fg, bg] = &bg ==# 'dark' ? a:dark : a:light
 
-  call s:hi('gutter'      , 184 , s:bg+2)
-  call s:hi('ale_error'   , 197 , s:bg+2)
-  call s:hi('ale_warning' , 214 , s:bg+2)
-
-  call s:hi('StatusLine' , 140 , s:bg+2 , 'none')
-
-  call s:hi('User7'      , 249 , s:bg+3 )
-  call s:hi('User8'      , 250 , s:bg+4 )
-  call s:hi('User9'      , 251 , s:bg+5 )
+  if empty(bg) && &bg ==# 'light'
+    if s:extract('StatusLine', 'reverse')
+      let ctermbg = s:extract('StatusLine', 'fg', 'cterm')
+      let guibg = s:extract('StatusLine', 'fg', 'gui')
+    else
+      let ctermbg = s:extract('StatusLine', 'bg', 'cterm')
+      let guibg = s:extract('StatusLine', 'bg', 'gui')
+    endif
+  else
+    let ctermbg = bg
+    let guibg = s:colors[bg]
+  endif
+  execute printf('hi %s ctermfg=%d guifg=%s ctermbg=%d guibg=%s',
+                \ a:group, fg, s:colors[fg], ctermbg, guibg)
+  if a:0 == 1
+    execute printf('hi %s cterm=%s gui=%s', a:group, a:1, a:1)
+  endif
 endfunction
 
-function! s:InsertStatuslineColor(mode)
+function! s:hi_statusline() abort
+  call s:hi('ElelineBufnrWinnr' , [232 , 178]    , [232 , 178]  )
+  call s:hi('ElelineTotalBuf'   , [178 , s:bg+8] , [240 , ''] )
+  call s:hi('ElelinePaste'      , [232 , 178]    , [232 , 178]    , 'bold')
+  call s:hi('ElelineFsize'      , [250 , s:bg+6] , [235 , ''] )
+  call s:hi('ElelineCurFname'   , [171 , s:bg+4] , [171 , '']     , 'bold' )
+  call s:hi('ElelineGitBranch'  , [184 , s:bg+2] , [89  , '']     , 'bold' )
+  call s:hi('ElelineGitStatus'  , [208 , s:bg+2] , [89  , ''])
+  call s:hi('ElelineError'      , [197 , s:bg+2] , [197 , ''])
+  call s:hi('ElelineWarning'    , [214 , s:bg+2] , [214 , ''])
+
+  if &bg ==# 'dark'
+    call s:hi('StatusLine' , [140 , s:bg+2], [140, ''] , 'none')
+  endif
+
+  call s:hi('Eleline7'      , [249 , s:bg+3], [237, ''] )
+  call s:hi('Eleline8'      , [250 , s:bg+4], [238, ''] )
+  call s:hi('Eleline9'      , [251 , s:bg+5], [239, ''] )
+endfunction
+
+function! s:InsertStatuslineColor(mode) abort
   if a:mode == 'i'
-    call s:hi('User1' , 251 , s:bg+8 )
+    call s:hi('ElelineBufnrWinnr' , [251, s:bg+8] , [251, s:bg+8])
   elseif a:mode == 'r'
-    call s:hi('User1' , 232 ,  160 )
+    call s:hi('ElelineBufnrWinnr' , [232, 160], [232, 160])
   else
-    call s:hi('User1' , 232 , 178  )
+    call s:hi('ElelineBufnrWinnr' , [232, 178], [232, 178])
   endif
 endfunction
 
 " Note that the "%!" expression is evaluated in the context of the
 " current window and buffer, while %{} items are evaluated in the
 " context of the window that the statusline belongs to.
-function! s:SetStatusline(...) abort
-  call S_fugitive(1)
+function! s:SetStatusLine(...) abort
+  call ElelineGitBranch(1)
   let &l:statusline = s:StatusLine()
   " User-defined highlightings shoule be put after colorscheme command.
   call s:hi_statusline()
 endfunction
 
 if exists('*timer_start')
-  call timer_start(100, function('s:SetStatusline'))
+  call timer_start(100, function('s:SetStatusLine'))
 else
-  call s:SetStatusline()
+  call s:SetStatusLine()
 endif
 
 augroup eleline
   autocmd!
-  autocmd User GitGutter,Startified,LanguageClientStarted call s:SetStatusline()
+  autocmd User GitGutter,Startified,LanguageClientStarted call s:SetStatusLine()
   " Change colors for insert mode
-  autocmd InsertLeave * call s:hi('User1' , 232 , 178  )
+  autocmd InsertLeave * call s:hi('ElelineBufnrWinnr', [232, 178], [232, 178])
   autocmd InsertEnter,InsertChange * call s:InsertStatuslineColor(v:insertmode)
-  autocmd BufWinEnter,ShellCmdPost,BufWritePost * call s:SetStatusline()
-  autocmd FileChangedShellPost,ColorScheme * call s:SetStatusline()
-  autocmd FileReadPre,ShellCmdPost,FileWritePost * call s:SetStatusline()
+  autocmd BufWinEnter,ShellCmdPost,BufWritePost * call s:SetStatusLine()
+  autocmd FileChangedShellPost,ColorScheme * call s:SetStatusLine()
+  autocmd FileReadPre,ShellCmdPost,FileWritePost * call s:SetStatusLine()
 augroup END
 
 let &cpoptions = s:save_cpo

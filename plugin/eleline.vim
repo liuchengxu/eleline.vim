@@ -17,13 +17,11 @@ let s:font = get(g:, 'eleline_powerline_fonts', get(g:, 'airline_powerline_fonts
 let s:jobs = {}
 
 function! ElelineBufnrWinnr() abort
+  let l:bufnr = bufnr('%')
   if has('gui_running')
-    let l:bufnr = '%n'
-  else
     function! s:circled_num(num) abort
       return nr2char(9311 + a:num)
     endfunction
-    let l:bufnr = bufnr('%')
     let l:bufnr = l:bufnr > 20 ? l:bufnr : s:circled_num(l:bufnr).' '
   endif
   return '  '.l:bufnr." ❖ ".winnr().' '

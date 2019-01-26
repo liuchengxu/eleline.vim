@@ -14,11 +14,12 @@ let s:save_cpo = &cpoptions
 set cpoptions&vim
 
 let s:font = get(g:, 'eleline_powerline_fonts', get(g:, 'airline_powerline_fonts', 0))
+let s:gui = has('gui_running')
 let s:jobs = {}
 
 function! ElelineBufnrWinnr() abort
   let l:bufnr = bufnr('%')
-  if has('gui_running')
+  if !s:gui
     function! s:circled_num(num) abort
       return nr2char(9311 + a:num)
     endfunction
@@ -41,14 +42,15 @@ function! ElelineFsize(f) abort
     return ''
   endif
   if l:size < 1024
-    return l:size.' bytes'
+    let size = l:size.' bytes'
   elseif l:size < 1024*1024
-    return printf('%.1f', l:size/1024.0).'k'
+    let size = printf('%.1f', l:size/1024.0).'k'
   elseif l:size < 1024*1024*1024
-    return printf('%.1f', l:size/1024.0/1024.0) . 'm'
+    let size = printf('%.1f', l:size/1024.0/1024.0) . 'm'
   else
-    return printf('%.1f', l:size/1024.0/1024.0/1024.0) . 'g'
+    let size = printf('%.1f', l:size/1024.0/1024.0/1024.0) . 'g'
   endif
+  return '  '.size.' '
 endfunction
 
 function! ElelineCurFname() abort
@@ -120,7 +122,7 @@ function! s:out_cb(channel, message) abort
     let l:job = ch_getjob(a:channel)
     let l:job_id = matchstr(string(l:job), '\d\+')
     if !has_key(s:jobs, l:job_id) | return | endif
-    let l:branch = substitute(a:message, '*', s:font ? "  \ue0a0" : ' Git:', '')
+    let l:branch = substitute(a:message, '*', s:font ? "  \ue0a0" : '  Git:', '')
     call s:SetGitBranch(s:cwd, l:branch.' ')
     call remove(s:jobs, l:job_id)
   endif
@@ -200,7 +202,7 @@ function! s:StatusLine() abort
     return l:prefix.'%<'.l:common
   endif
   let l:tot = s:def('ElelineTotalBuf')
-  let l:fsize = '%#ElelineFsize# %{ElelineFsize(@%)} %*'
+  let l:fsize = '%#ElelineFsize#%{ElelineFsize(@%)}%*'
   let l:m_r_f = '%#Eleline7# %m%r%y %*'
   let l:pos = '%#Eleline8# '.(s:font?"\ue0a1":'').'%l/%L:%c%V |'
   let l:enc = ' %{&fenc != "" ? &fenc : &enc} | %{&bomb ? ",BOM " : ""}'

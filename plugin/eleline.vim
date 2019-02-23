@@ -256,13 +256,9 @@ function! s:hi(group, dark, light, ...) abort
   let [fg, bg] = &bg ==# 'dark' ? a:dark : a:light
 
   if empty(bg) && &bg ==# 'light'
-    if s:extract('StatusLine', 'reverse')
-      let ctermbg = s:extract('StatusLine', 'fg', 'cterm')
-      let guibg = s:extract('StatusLine', 'fg', 'gui')
-    else
-      let ctermbg = s:extract('StatusLine', 'bg', 'cterm')
-      let guibg = s:extract('StatusLine', 'bg', 'gui')
-    endif
+    let reverse = s:extract('StatusLine', 'reverse')
+    let ctermbg = s:extract('StatusLine', reverse ? 'fg' : 'bg', 'cterm')
+    let guibg = s:extract('StatusLine', reverse ? 'fg': 'bg' , 'gui')
   else
     let ctermbg = bg
     let guibg = s:colors[bg]
@@ -275,7 +271,7 @@ function! s:hi(group, dark, light, ...) abort
 endfunction
 
 function! s:hi_statusline() abort
-  call s:hi('ElelineBufnrWinnr' , [232 , 178]    , [232 , 178]  )
+  call s:hi('ElelineBufnrWinnr' , [232 , 178]    , [89 , '']  )
   call s:hi('ElelineTotalBuf'   , [178 , s:bg+8] , [240 , ''] )
   call s:hi('ElelinePaste'      , [232 , 178]    , [232 , 178]    , 'bold')
   call s:hi('ElelineFsize'      , [250 , s:bg+6] , [235 , ''] )
@@ -300,7 +296,7 @@ function! s:InsertStatuslineColor(mode) abort
   elseif a:mode == 'r'
     call s:hi('ElelineBufnrWinnr' , [232, 160], [232, 160])
   else
-    call s:hi('ElelineBufnrWinnr' , [232, 178], [232, 178])
+    call s:hi('ElelineBufnrWinnr' , [232, 178], [89, ''])
   endif
 endfunction
 
@@ -324,7 +320,7 @@ augroup eleline
   autocmd!
   autocmd User GitGutter,Startified,LanguageClientStarted call s:SetStatusLine()
   " Change colors for insert mode
-  autocmd InsertLeave * call s:hi('ElelineBufnrWinnr', [232, 178], [232, 178])
+  autocmd InsertLeave * call s:hi('ElelineBufnrWinnr', [232, 178], [89, ''])
   autocmd InsertEnter,InsertChange * call s:InsertStatuslineColor(v:insertmode)
   autocmd BufWinEnter,ShellCmdPost,BufWritePost * call s:SetStatusLine()
   autocmd FileChangedShellPost,ColorScheme * call s:SetStatusLine()

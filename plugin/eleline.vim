@@ -16,7 +16,7 @@ set cpoptions&vim
 let s:font = get(g:, 'eleline_powerline_fonts', get(g:, 'airline_powerline_fonts', 0))
 let s:gui = has('gui_running')
 let s:jobs = {}
-let s:function_icon = s:font ? 'Ⓕ  ' : ''
+let s:function_icon = s:font ? ' Ⓕ  ' : ''
 
 function! ElelineBufnrWinnr() abort
   let l:bufnr = bufnr('%')
@@ -178,7 +178,7 @@ function! ElelineLCN() abort
 endfunction
 
 function! ElelineVista() abort
-  return exists('b:vista_nearest_method_or_function') ? s:function_icon.b:vista_nearest_method_or_function : ''
+  return !empty(get(b:, 'vista_nearest_method_or_function', '')) ? s:function_icon.b:vista_nearest_method_or_function : ''
 endfunction
 
 function! ElelineCoc() abort

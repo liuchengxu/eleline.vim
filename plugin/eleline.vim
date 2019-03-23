@@ -16,6 +16,7 @@ set cpoptions&vim
 let s:font = get(g:, 'eleline_powerline_fonts', get(g:, 'airline_powerline_fonts', 0))
 let s:gui = has('gui_running')
 let s:jobs = {}
+let s:function_icon = s:font ? 'Ⓕ  ' : ''
 
 function! ElelineBufnrWinnr() abort
   let l:bufnr = bufnr('%')
@@ -176,6 +177,10 @@ function! ElelineLCN() abort
   return eleline#LanguageClientNeovim()
 endfunction
 
+function! ElelineVista() abort
+  return exists('b:vista_nearest_method_or_function') ? s:function_icon.b:vista_nearest_method_or_function : ''
+endfunction
+
 function! ElelineCoc() abort
   if s:is_tmp_file() | return '' | endif
   return get(g:, 'coc_status', '')
@@ -196,8 +201,9 @@ function! s:StatusLine() abort
   let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""} '
   let l:lcn = '%{ElelineLCN()}'
   let l:coc = '%{ElelineCoc()}'
+  let l:vista = '%{ElelineVista()}'
   let l:prefix = l:bufnr_winnr.l:paste
-  let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc
+  let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc.l:vista
   if get(g:, 'eleline_slim', 0)
     return l:prefix.'%<'.l:common
   endif

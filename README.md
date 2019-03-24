@@ -5,20 +5,15 @@ Another **ele**gant status**line** for vim, extracted from [space-vim](https://g
 Currenctly supported plugins:
 
 - [ale](https://github.com/w0rp/ale)
-
 - [coc.nvim](https://github.com/neoclide/coc.nvim)
-
-- [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
-
-- [vim-signify](https://github.com/mhinz/vim-signify)
-
-- [vim-gutentags](https://github.com/ludovicchabant/vim-gutentags)
-
+- [vista.vim](https://github.com/liuchengxu/vista.vim)
 - [vim-fugitive](https://github.com/tpope/vim-fugitive).
-
-  If you're using newer vim or neovim, i.e., async API is available, eleline will probe the git branch info asynchronously, instead of depending on vim-fugitive.
-
+- [vim-signify](https://github.com/mhinz/vim-signify)
+- [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
+- [vim-gutentags](https://github.com/ludovicchabant/vim-gutentags)
 - [LanguageClient-neovim](https://github.com/autozimu/LanguageClient-neovim)
+
+If you're using newer vim or neovim, i.e., async API is available, eleline will probe the git branch info asynchronously instead of depending on vim-fugitive, making your vim never slower due to the statusline.
 
 ## Installation
 
@@ -27,6 +22,7 @@ This plugin can be installed with a varity of plugin managers, e.g., [vim-plug](
 ```vim
 Plug 'liuchengxu/eleline.vim'
 ```
+
 Don't forget to `set laststatus=2` to always display statusline.
 
 ## Usage

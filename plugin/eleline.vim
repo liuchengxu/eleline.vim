@@ -14,9 +14,9 @@ let s:save_cpo = &cpoptions
 set cpoptions&vim
 
 let s:font = get(g:, 'eleline_powerline_fonts', get(g:, 'airline_powerline_fonts', 0))
+let s:f_icon = s:font ? get(g:, 'eleline_function_icon', " \uf794 ") : ''
 let s:gui = has('gui_running')
 let s:jobs = {}
-let s:function_icon = s:font ? ' Ⓕ  ' : ''
 
 function! ElelineBufnrWinnr() abort
   let l:bufnr = bufnr('%')
@@ -178,12 +178,13 @@ function! ElelineLCN() abort
 endfunction
 
 function! ElelineVista() abort
-  return !empty(get(b:, 'vista_nearest_method_or_function', '')) ? s:function_icon.b:vista_nearest_method_or_function : ''
+  return !empty(get(b:, 'vista_nearest_method_or_function', '')) ? s:f_icon.b:vista_nearest_method_or_function : ''
 endfunction
 
 function! ElelineCoc() abort
   if s:is_tmp_file() | return '' | endif
-  return get(g:, 'coc_status', '')
+  if exists('g:coc_status') | return g:coc_status.' ' | endif
+  return ''
 endfunction
 
 " https://github.com/liuchengxu/eleline.vim/wiki
@@ -201,7 +202,7 @@ function! s:StatusLine() abort
   let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""} '
   let l:lcn = '%{ElelineLCN()}'
   let l:coc = '%{ElelineCoc()}'
-  let l:vista = '%{ElelineVista()}'
+  let l:vista = '%#ElelineVista#%{ElelineVista()}%*'
   let l:prefix = l:bufnr_winnr.l:paste
   let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc.l:vista
   if get(g:, 'eleline_slim', 0)
@@ -286,6 +287,7 @@ function! s:hi_statusline() abort
   call s:hi('ElelineGitStatus'  , [208 , s:bg+2] , [89  , ''])
   call s:hi('ElelineError'      , [197 , s:bg+2] , [197 , ''])
   call s:hi('ElelineWarning'    , [214 , s:bg+2] , [214 , ''])
+  call s:hi('ElelineVista'      , [149 , s:bg+2] , [149 , ''])
 
   if &bg ==# 'dark'
     call s:hi('StatusLine' , [140 , s:bg+2], [140, ''] , 'none')

@@ -181,6 +181,12 @@ function! ElelineVista() abort
   return !empty(get(b:, 'vista_nearest_method_or_function', '')) ? s:f_icon.b:vista_nearest_method_or_function : ''
 endfunction
 
+function! ElelineCocFunctionSymbol() abort
+  if s:is_tmp_file() | return '' | endif
+  if exists('b:coc_current_function') | return b:coc_current_function.' ' | endif
+  return ''
+endfunction
+
 function! ElelineCoc() abort
   if s:is_tmp_file() | return '' | endif
   if exists('g:coc_status') | return g:coc_status.' ' | endif
@@ -201,7 +207,7 @@ function! s:StatusLine() abort
   let l:warning = s:def('ElelineWarning')
   let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""} '
   let l:lcn = '%{ElelineLCN()}'
-  let l:coc = '%{ElelineCoc()}'
+  let l:coc = '%{ElelineCocFunctionSymbol()}%{ElelineCoc()}'
   let l:vista = '%#ElelineVista#%{ElelineVista()}%*'
   let l:prefix = l:bufnr_winnr.l:paste
   let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc.l:vista

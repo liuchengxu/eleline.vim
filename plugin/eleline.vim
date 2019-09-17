@@ -187,11 +187,12 @@ function! ElelineCoc() abort
   return ''
 endfunction
 
+function! s:def(fn) abort
+  return printf('%%#%s#%%{%s()}%%*', a:fn, a:fn)
+endfunction
+
 " https://github.com/liuchengxu/eleline.vim/wiki
 function! s:StatusLine() abort
-  function! s:def(fn) abort
-    return printf('%%#%s#%%{%s()}%%*', a:fn, a:fn)
-  endfunction
   let l:bufnr_winnr = s:def('ElelineBufnrWinnr')
   let l:paste = s:def('ElelinePaste')
   let l:curfname = s:def('ElelineCurFname')
@@ -262,10 +263,17 @@ endif
 function! s:hi(group, dark, light, ...) abort
   let [fg, bg] = &bg ==# 'dark' ? a:dark : a:light
 
-  if empty(bg) && &bg ==# 'light'
-    let reverse = s:extract('StatusLine', 'reverse')
-    let ctermbg = s:extract('StatusLine', reverse ? 'fg' : 'bg', 'cterm')
-    let guibg = s:extract('StatusLine', reverse ? 'fg': 'bg' , 'gui')
+  if empty(bg)
+    if &bg ==# 'light'
+      let reverse = s:extract('StatusLine', 'reverse')
+      let ctermbg = s:extract('StatusLine', reverse ? 'fg' : 'bg', 'cterm')
+      let ctermbg = empty(ctermbg) ? 237 : ctermbg
+      let guibg = s:extract('StatusLine', reverse ? 'fg': 'bg' , 'gui')
+      let guibg = empty(guibg) ? s:colors[237] : guibg
+    else
+      let ctermbg = bg
+      let guibg = s:colors[bg]
+    endif
   else
     let ctermbg = bg
     let guibg = s:colors[bg]
@@ -308,6 +316,11 @@ function! s:InsertStatuslineColor(mode) abort
   endif
 endfunction
 
+function! s:qf() abort
+  let l:bufnr_winnr = s:def('ElelineBufnrWinnr')
+  let &l:statusline = l:bufnr_winnr."%{exists('w:quickfix_title')? ' '.w:quickfix_title : ''} %l/%L %p"
+endfunction
+
 " Note that the "%!" expression is evaluated in the context of the
 " current window and buffer, while %{} items are evaluated in the
 " context of the window that the statusline belongs to.
@@ -333,6 +346,7 @@ augroup eleline
   autocmd BufWinEnter,ShellCmdPost,BufWritePost * call s:SetStatusLine()
   autocmd FileChangedShellPost,ColorScheme * call s:SetStatusLine()
   autocmd FileReadPre,ShellCmdPost,FileWritePost * call s:SetStatusLine()
+  autocmd FileType qf call s:qf()
 augroup END
 
 let &cpoptions = s:save_cpo

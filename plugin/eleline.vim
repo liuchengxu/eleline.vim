@@ -185,7 +185,7 @@ endfunction
 
 function! ElelineCoc() abort
   if s:is_tmp_file() | return '' | endif
-  if exists('g:coc_status') && get(g:, 'coc_enabled', 0) | return g:coc_status.' ' | endif
+  if get(g:, 'coc_enabled', 0) | return coc#status().' ' | endif
   return ''
 endfunction
 

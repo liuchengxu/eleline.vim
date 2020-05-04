@@ -92,7 +92,7 @@ function! ElelineGitBranch(...) abort
   let reload = get(a:, 1, 0) == 1
   if exists('b:eleline_branch') && !reload | return b:eleline_branch | endif
   if !exists('*FugitiveExtractGitDir') | return '' | endif
-  let dir = get(b:, 'git_dir', FugitiveExtractGitDir(resolve(expand('%:p'))))
+  let dir = exists('b:git_dir') ? b:git_dir : FugitiveExtractGitDir(resolve(expand('%:p')))
   if empty(dir) | return '' | endif
   let b:git_dir = dir
   let roots = values(s:jobs)

@@ -1,6 +1,7 @@
-" =============================================================================
+"=============================================================================
 " Filename: eleline.vim
 " Author: Liu-Cheng Xu
+" Fork: R0ckyY2
 " URL: https://github.com/liuchengxu/eleline.vim
 " License: MIT License
 " =============================================================================
@@ -28,11 +29,11 @@ function! ElelineBufnrWinnr() abort
     " transform to circled num: nr2char(9311 + l:bufnr)
     let l:bufnr = l:bufnr > 20 ? l:bufnr : nr2char(9311 + l:bufnr).' '
   endif
-  return '  '.l:bufnr.' ❖ '.winnr().' '
+  return '  '.winnr().'  '.l:bufnr.' '
 endfunction
 
 function! ElelineTotalBuf() abort
-  return '[TOT:'.len(filter(range(1, bufnr('$')), 'buflisted(v:val)')).']'
+  return '['.len(filter(range(1, bufnr('$')), 'buflisted(v:val)')).']'
 endfunction
 
 function! ElelinePaste() abort
@@ -45,15 +46,15 @@ function! ElelineFsize(f) abort
     return ''
   endif
   if l:size < 1024
-    let size = l:size.' bytes'
+    let size = l:size.' B'
   elseif l:size < 1024*1024
-    let size = printf('%.1f', l:size/1024.0).'k'
+    let size = printf('%.1f', l:size/1024.0) . 'K'
   elseif l:size < 1024*1024*1024
-    let size = printf('%.1f', l:size/1024.0/1024.0) . 'm'
+    let size = printf('%.1f', l:size/1024.0/1024.0) . 'M'
   else
-    let size = printf('%.1f', l:size/1024.0/1024.0/1024.0) . 'g'
+    let size = printf('%.1f', l:size/1024.0/1024.0/1024.0) . 'G'
   endif
-  return '  '.size.' '
+  return ' '.size.' '
 endfunction
 
 function! ElelineCurFname() abort
@@ -197,6 +198,7 @@ endfunction
 function! s:StatusLine() abort
   let l:bufnr_winnr = s:def('ElelineBufnrWinnr')
   let l:paste = s:def('ElelinePaste')
+  let l:tot = s:def('ElelineTotalBuf')
   let l:curfname = s:def('ElelineCurFname')
   let l:branch = s:def('ElelineGitBranch')
   let l:status = s:def('ElelineGitStatus')
@@ -205,21 +207,20 @@ function! s:StatusLine() abort
   let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""} '
   let l:lcn = '%{ElelineLCN()}'
   let l:coc = '%{ElelineCoc()}'
-  let l:vista = '%#ElelineVista#%{ElelineVista()}%*'
+  let l:vista = s:def('ElelineVista')
   let l:prefix = l:bufnr_winnr.l:paste
   let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc.l:vista
   if get(g:, 'eleline_slim', 0)
     return l:prefix.'%<'.l:common
   endif
-  let l:tot = s:def('ElelineTotalBuf')
-  let l:fsize = '%#ElelineFsize#%{ElelineFsize(@%)}%*'
   let l:m_r_f = '%#Eleline7# %m%r%y %*'
-  let l:pos = '%#Eleline8# '.(s:font?"\ue0a1":'').'%l/%L:%c%V |'
-  let l:enc = ' %{&fenc != "" ? &fenc : &enc} | %{&bomb ? ",BOM " : ""}'
+  let l:enc = '%#Eleline8# %{&fenc != "" ? &fenc : &enc} | %{&bomb ? ",BOM " : ""}'
   let l:ff = '%{&ff} %*'
-  let l:pct = '%#Eleline9# %P %*'
-  return l:prefix.l:tot.'%<'.l:fsize.l:common
-        \ .'%='.l:m_r_f.l:pos.l:enc.l:ff.l:pct
+  let l:pos = '%#Eleline9# '.(s:font?"\ue0a1":'').' %3l/%L:%c%V |'
+  let l:pct = ' %P %*'
+  let l:fsize = '%#ElelineFsize#%{ElelineFsize(@%)}%*'
+  return l:prefix.l:tot.'%<'.l:common
+        \ .'%='.l:m_r_f.l:enc.l:ff.l:pos.l:pct.l:fsize
 endfunction
 
 let s:colors = {
@@ -291,7 +292,6 @@ function! s:hi_statusline() abort
   call s:hi('ElelineBufnrWinnr' , [232 , 178]    , [89 , '']  )
   call s:hi('ElelineTotalBuf'   , [178 , s:bg+8] , [240 , ''] )
   call s:hi('ElelinePaste'      , [232 , 178]    , [232 , 178]    , 'bold')
-  call s:hi('ElelineFsize'      , [250 , s:bg+6] , [235 , ''] )
   call s:hi('ElelineCurFname'   , [171 , s:bg+4] , [171 , '']     , 'bold' )
   call s:hi('ElelineGitBranch'  , [184 , s:bg+2] , [89  , '']     , 'bold' )
   call s:hi('ElelineGitStatus'  , [208 , s:bg+2] , [89  , ''])
@@ -306,6 +306,7 @@ function! s:hi_statusline() abort
   call s:hi('Eleline7'      , [249 , s:bg+3], [237, ''] )
   call s:hi('Eleline8'      , [250 , s:bg+4], [238, ''] )
   call s:hi('Eleline9'      , [251 , s:bg+5], [239, ''] )
+  call s:hi('ElelineFsize'  , [252 , s:bg+6] , [235 , ''] )
 endfunction
 
 function! s:InsertStatuslineColor(mode) abort

@@ -163,7 +163,7 @@ endfunction
 
 function! ElelineGitStatus() abort
   let l:summary = [0, 0, 0]
-  if exists('b:sy')
+  if exists('b:sy.stats')
     let l:summary = b:sy.stats
   elseif exists('b:gitgutter.summary')
     let l:summary = b:gitgutter.summary

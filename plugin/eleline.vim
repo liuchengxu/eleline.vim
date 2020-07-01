@@ -102,7 +102,7 @@ function! ElelineGitBranch(...) abort
     let job = job_start(s:git_branch_cmd, {'out_io': 'pipe', 'err_io':'null',  'out_cb': function('s:out_cb')})
     if job_status(job) ==# 'fail' | return '' | endif
     let s:cwd = root
-    let job_id = matchstr(job, '\d\+')
+    let job_id = ch_info(job_getchannel(job))['id']
     let s:jobs[job_id] = root
   elseif exists('*jobstart')
     let job_id = jobstart(s:git_branch_cmd, {
@@ -162,7 +162,7 @@ endfunction
 
 function! ElelineGitStatus() abort
   let l:summary = [0, 0, 0]
-  if exists('b:sy')
+  if exists('b:sy.stats')
     let l:summary = b:sy.stats
   elseif exists('b:gitgutter.summary')
     let l:summary = b:gitgutter.summary

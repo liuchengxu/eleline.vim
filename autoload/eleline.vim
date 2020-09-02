@@ -18,7 +18,9 @@ endfunction
 
 function! eleline#LanguageClientNeovim() abort
   let l:black_list = ['startify', 'nerdtree', 'fugitiveblame', 'gitcommit']
-  if count(l:black_list, &filetype) | return '' | endif
+  if count(l:black_list, &filetype)
+    return ''
+  endif
   if LanguageClient#serverStatus() == 1
     if !exists('s:timer')
       let s:timer = timer_start(80, function('s:OnFrame'), {'repeat': -1})

@@ -84,20 +84,32 @@ endfunction
 
 " Reference: https://github.com/chemzqm/vimrc/blob/master/statusline.vim
 function! ElelineGitBranch(...) abort
-  if s:is_tmp_file() | return '' | endif
+  if s:is_tmp_file()
+    return ''
+  endif
   let reload = get(a:, 1, 0) == 1
-  if exists('b:eleline_branch') && !reload | return b:eleline_branch | endif
-  if !exists('*FugitiveExtractGitDir') | return '' | endif
+  if exists('b:eleline_branch') && !reload
+    return b:eleline_branch
+  endif
+  if !exists('*FugitiveExtractGitDir')
+    return ''
+  endif
   let dir = exists('b:git_dir') ? b:git_dir : FugitiveExtractGitDir(resolve(expand('%:p')))
-  if empty(dir) | return '' | endif
+  if empty(dir)
+    return ''
+  endif
   let b:git_dir = dir
   let roots = values(s:jobs)
   let root = fnamemodify(dir, ':h')
-  if index(roots, root) >= 0 | return '' | endif
+  if index(roots, root) >= 0
+    return ''
+  endif
 
   if exists('*job_start')
     let job = job_start(s:git_branch_cmd, {'out_io': 'pipe', 'err_io':'null',  'out_cb': function('s:out_cb')})
-    if job_status(job) ==# 'fail' | return '' | endif
+    if job_status(job) ==# 'fail'
+      return ''
+    endif
     let s:cwd = root
     let job_id = ch_info(job_getchannel(job))['id']
     let s:jobs[job_id] = root
@@ -108,7 +120,9 @@ function! ElelineGitBranch(...) abort
       \ 'stderr_buffered': v:true,
       \ 'on_exit': function('s:on_exit')
       \})
-    if job_id == 0 || job_id == -1 | return '' | endif
+    if job_id == 0 || job_id == -1
+      return ''
+    endif
     let s:jobs[job_id] = root
   elseif exists('g:loaded_fugitive')
     let l:head = fugitive#head()
@@ -121,7 +135,9 @@ endfunction
 function! s:out_cb(channel, message) abort
   if a:message =~# '^* '
     let l:job_id = ch_info(a:channel)['id']
-    if !has_key(s:jobs, l:job_id) | return | endif
+    if !has_key(s:jobs, l:job_id)
+      return
+    endif
     let l:branch = substitute(a:message, '*', s:git_branch_star_substituted, '')
     call s:SetGitBranch(s:cwd, l:branch.' ')
     call remove(s:jobs, l:job_id)
@@ -129,15 +145,21 @@ function! s:out_cb(channel, message) abort
 endfunction
 
 function! s:on_exit(job_id, data, _event) dict abort
-  if !has_key(s:jobs, a:job_id) || !has_key(self, 'stdout') | return | endif
-  if v:dying | return | endif
+  if !has_key(s:jobs, a:job_id) || !has_key(self, 'stdout')
+    return
+  endif
+  if v:dying
+    return
+  endif
   let l:cur_branch = join(filter(self.stdout, 'v:val =~# "*"'))
   if !empty(l:cur_branch)
     let l:branch = substitute(l:cur_branch, '*', s:git_branch_star_substituted, '')
     call s:SetGitBranch(self.cwd, l:branch.' ')
   else
     let err = join(self.stderr)
-    if !empty(err) | echoerr err | endif
+    if !empty(err)
+      echoerr err
+    endif
   endif
   call remove(s:jobs, a:job_id)
 endfunction
@@ -172,7 +194,9 @@ function! ElelineGitStatus() abort
 endfunction
 
 function! ElelineLCN() abort
-  if !exists('g:LanguageClient_loaded') | return '' | endif
+  if !exists('g:LanguageClient_loaded')
+    return ''
+  endif
   return eleline#LanguageClientNeovim()
 endfunction
 
@@ -181,8 +205,12 @@ function! ElelineVista() abort
 endfunction
 
 function! ElelineCoc() abort
-  if s:is_tmp_file() | return '' | endif
-  if get(g:, 'coc_enabled', 0) | return coc#status().' ' | endif
+  if s:is_tmp_file()
+    return ''
+  endif
+  if get(g:, 'coc_enabled', 0)
+    return coc#status().' '
+  endif
   return ''
 endfunction
 

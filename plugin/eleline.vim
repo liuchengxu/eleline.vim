@@ -74,13 +74,9 @@ function! ElelineWarning() abort
 endfunction
 
 function! s:is_tmp_file() abort
-  if !empty(&buftype)
+  return !empty(&buftype)
         \ || index(['startify', 'gitcommit'], &filetype) > -1
         \ || expand('%:p') =~# '^/tmp'
-    return 1
-  else
-    return 0
-  endif
 endfunction
 
 " Reference: https://github.com/chemzqm/vimrc/blob/master/statusline.vim
@@ -146,7 +142,7 @@ function! s:out_cb(channel, message) abort
 endfunction
 
 function! s:on_exit(job_id, data, _event) dict abort
-  if !has_key(s:jobs, a:job_id)
+  if !has_key(s:jobs, a:job_id) || !has_key(self, 'stdout')
     return
   endif
   if v:dying
@@ -181,11 +177,12 @@ function! s:SetGitBranch(root, str) abort
 endfunction
 
 function! ElelineGitStatus() abort
-  let l:summary = [0, 0, 0]
   if exists('b:sy.stats')
     let l:summary = b:sy.stats
   elseif exists('b:gitgutter.summary')
     let l:summary = b:gitgutter.summary
+  else
+    let l:summary = [0, 0, 0]
   endif
   if max(l:summary) > 0
     return ' +'.l:summary[0].' ~'.l:summary[1].' -'.l:summary[2].' '

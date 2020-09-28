@@ -78,7 +78,7 @@ endfunction
 
 function! s:is_tmp_file() abort
   return !empty(&buftype)
-        \ || index(['startify', 'gitcommit', 'defx', 'vista_kind'], &filetype) > -1
+        \ || index(['startify', 'gitcommit', 'defx', 'vista', 'vista_kind'], &filetype) > -1
         \ || expand('%:p') =~# '^/tmp'
 endfunction
 

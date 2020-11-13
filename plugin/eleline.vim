@@ -201,7 +201,7 @@ function! ElelineLCN() abort
 endfunction
 
 function! ElelineVista() abort
-  return !empty(get(b:, 'vista_nearest_method_or_function', '')) ? s:fn_icon.b:vista_nearest_method_or_function : ''
+  return !empty(get(b:, 'vista_nearest_method_or_function', '')) ? s:fn_icon.b:vista_nearest_method_or_function.' ' : ' '
 endfunction
 
 function! ElelineCoc() abort
@@ -210,9 +210,9 @@ function! ElelineCoc() abort
   endif
   if get(g:, 'coc_enabled', 0)
     if !empty(get(b:, 'coc_git_blame', ''))
-      return coc#status().' '.b:coc_git_blame.' '
+      return coc#status().' '.b:coc_git_blame.''
     else
-      return coc#status().' '
+      return coc#status().''
     endif
   endif
   return ''

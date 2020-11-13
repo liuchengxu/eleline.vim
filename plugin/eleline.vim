@@ -209,7 +209,11 @@ function! ElelineCoc() abort
     return ''
   endif
   if get(g:, 'coc_enabled', 0)
-    return coc#status().' '
+    if !empty(get(b:, 'coc_git_blame', ''))
+      return coc#status().' '.b:coc_git_blame.' '
+    else
+      return coc#status().' '
+    endif
   endif
   return ''
 endfunction

@@ -236,7 +236,7 @@ function! s:StatusLine() abort
   let l:coc = '%{ElelineCoc()}'
   let l:vista = '%#ElelineVista#%{ElelineVista()}%*'
   let l:prefix = l:bufnr_winnr.l:paste
-  let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc.l:vista
+  let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:vista.l:coc
   if get(g:, 'eleline_slim', 0)
     return l:prefix.'%<'.l:common
   endif

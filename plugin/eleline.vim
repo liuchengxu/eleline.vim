@@ -189,6 +189,8 @@ function! ElelineGitStatus() abort
   endif
   if max(l:summary) > 0
     return ' +'.l:summary[0].' ~'.l:summary[1].' -'.l:summary[2].' '
+  elseif !empty(get(b:, 'coc_git_status', ''))
+    return ' '.b:coc_git_status.' '
   endif
   return ''
 endfunction

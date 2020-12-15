@@ -249,12 +249,11 @@ function! s:StatusLine() abort
   let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""} '
   let l:lcn = '%{ElelineLCN()}'
   let l:coc = '%{ElelineCoc()}'
-  if empty(get(b:, 'vista_nearest_method_or_function', ''))
-    let l:lsp = '%{ElelineNvimLsp()}'
-    let l:vista = ''
-  else
-    let l:lsp = ''
-    let l:vista = '%#ElelineVista#%{ElelineVista()}%*'
+  let l:lsp = ''
+  let l:vista = '%#ElelineVista#%{ElelineVista()}%*'
+  if empty(get(b:, 'vista_nearest_method_or_function', '')) && has('nvim-0.5')
+      let l:lsp = '%{ElelineNvimLsp()}'
+      let l:vista = ''
   endif
   let l:prefix = l:bufnr_winnr.l:paste
   let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc.l:lsp.l:vista

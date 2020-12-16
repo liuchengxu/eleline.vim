@@ -210,11 +210,7 @@ function! ElelineNvimLsp() abort
   endif
   if luaeval('#vim.lsp.buf_get_clients() > 0')
     let l:lsp_status = luaeval("require('lsp-status').status()")
-    if empty(l:lsp_status)
-      return ''
-    else
-      return s:fn_icon.l:lsp_status
-    endif
+    return empty(l:lsp_status) ? '' : s:fn_icon.l:lsp_status
   endif
   return ''
 endfunction

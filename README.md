@@ -12,6 +12,7 @@ Currently supported plugins:
 - [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
 - [vim-gutentags](https://github.com/ludovicchabant/vim-gutentags)
 - [LanguageClient-neovim](https://github.com/autozimu/LanguageClient-neovim)
+- [lsp-status.nvim](https://github.com/nvim-lua/lsp-status.nvim)
 
 If you're using newer vim or neovim, i.e., async API is available, eleline will probe the git branch info asynchronously instead of depending on vim-fugitive, making your vim never slower due to the statusline.
 

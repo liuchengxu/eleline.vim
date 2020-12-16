@@ -78,7 +78,7 @@ endfunction
 
 function! s:is_tmp_file() abort
   return !empty(&buftype)
-        \ || index(['startify', 'gitcommit'], &filetype) > -1
+        \ || index(['startify', 'gitcommit', 'defx', 'vista', 'vista_kind'], &filetype) > -1
         \ || expand('%:p') =~# '^/tmp'
 endfunction
 
@@ -204,6 +204,17 @@ function! ElelineVista() abort
   return !empty(get(b:, 'vista_nearest_method_or_function', '')) ? s:fn_icon.b:vista_nearest_method_or_function : ''
 endfunction
 
+function! ElelineNvimLsp() abort
+  if s:is_tmp_file()
+    return ''
+  endif
+  if luaeval('#vim.lsp.buf_get_clients() > 0')
+    let l:lsp_status = luaeval("require('lsp-status').status()")
+    return empty(l:lsp_status) ? '' : s:fn_icon.l:lsp_status
+  endif
+  return ''
+endfunction
+
 function! ElelineCoc() abort
   if s:is_tmp_file()
     return ''
@@ -230,9 +241,14 @@ function! s:StatusLine() abort
   let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""} '
   let l:lcn = '%{ElelineLCN()}'
   let l:coc = '%{ElelineCoc()}'
+  let l:lsp = ''
   let l:vista = '%#ElelineVista#%{ElelineVista()}%*'
+  if empty(get(b:, 'vista_nearest_method_or_function', '')) && has('nvim-0.5')
+      let l:lsp = '%{ElelineNvimLsp()}'
+      let l:vista = ''
+  endif
   let l:prefix = l:bufnr_winnr.l:paste
-  let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc.l:vista
+  let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc.l:lsp.l:vista
   if get(g:, 'eleline_slim', 0)
     return l:prefix.'%<'.l:common
   endif

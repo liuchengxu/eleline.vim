@@ -240,7 +240,7 @@ function! s:StatusLine() abort
   let l:status = s:def('ElelineGitStatus')
   let l:error = s:def('ElelineError')
   let l:warning = s:def('ElelineWarning')
-  let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""} '
+  let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""}'
   let l:lcn = '%{ElelineLCN()}'
   let l:coc = '%{ElelineCoc()}'
   let l:lsp = ''

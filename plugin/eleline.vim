@@ -222,7 +222,13 @@ function! ElelineCoc() abort
     return ''
   endif
   if get(g:, 'coc_enabled', 0)
-    return coc#status().' '
+    let l:coc_status = coc#status()
+    if !empty(get(b:, 'coc_git_blame', ''))
+      if len(l:coc_status) + len(b:coc_git_blame) < winwidth("%") / 3
+        return l:coc_status.' '.b:coc_git_blame
+      endif
+    endif
+    return l:coc_status
   endif
   return ''
 endfunction
@@ -240,7 +246,7 @@ function! s:StatusLine() abort
   let l:status = s:def('ElelineGitStatus')
   let l:error = s:def('ElelineError')
   let l:warning = s:def('ElelineWarning')
-  let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""} '
+  let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""}'
   let l:lcn = '%{ElelineLCN()}'
   let l:coc = '%{ElelineCoc()}'
   let l:lsp = ''

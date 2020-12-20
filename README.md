@@ -2,22 +2,23 @@
 
 Another **ele**gant status**line** for vim, extracted from [space-vim](https://github.com/liuchengxu/space-vim).
 
-Currenctly supported plugins:
+Currently supported plugins:
 
 - [ale](https://github.com/w0rp/ale)
 - [coc.nvim](https://github.com/neoclide/coc.nvim)
 - [vista.vim](https://github.com/liuchengxu/vista.vim)
-- [vim-fugitive](https://github.com/tpope/vim-fugitive).
+- [vim-fugitive](https://github.com/tpope/vim-fugitive)
 - [vim-signify](https://github.com/mhinz/vim-signify)
 - [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
 - [vim-gutentags](https://github.com/ludovicchabant/vim-gutentags)
 - [LanguageClient-neovim](https://github.com/autozimu/LanguageClient-neovim)
+- [lsp-status.nvim](https://github.com/nvim-lua/lsp-status.nvim)
 
 If you're using newer vim or neovim, i.e., async API is available, eleline will probe the git branch info asynchronously instead of depending on vim-fugitive, making your vim never slower due to the statusline.
 
 ## Installation
 
-This plugin can be installed with a varity of plugin managers, e.g., [vim-plug](https://github.com/junegunn/vim-plug):
+This plugin can be installed with a variety of plugin managers, e.g., [vim-plug](https://github.com/junegunn/vim-plug):
 
 ```vim
 Plug 'liuchengxu/eleline.vim'

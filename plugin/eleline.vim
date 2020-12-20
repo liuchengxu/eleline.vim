@@ -235,10 +235,10 @@ function! s:StatusLine() abort
     return l:prefix.'%<'.l:common
   endif
   let l:m_r_f = '%#Eleline7# %m%r%y %*'
-  let l:enc = '%#Eleline8# %{&fenc != "" ? &fenc : &enc} | %{&bomb ? ",BOM " : ""}'
-  let l:ff = '%{&ff} %*'
-  let l:pos = '%#Eleline9# '.(s:font?"\ue0a1":'').' %3l/%L:%c%V |'
-  let l:pct = ' %P %*'
+  let l:enc = '%#Eleline8# %{&fenc != "" ? &fenc : &enc}[%{&bomb ? ",BOM " : ""}'
+  let l:ff = '%{&ff}] %*'
+  let l:pos = '%#Eleline9# '.(s:font?"\ue0a1":'').'%3l/%L:%c%V'
+  let l:pct = '[%P] %*'
   let l:fsize = '%#ElelineFsize#%{ElelineFsize(@%)}%*'
   return l:prefix.l:tot.'%<'.l:common
         \ .'%='.l:m_r_f.l:enc.l:ff.l:pos.l:pct.l:fsize

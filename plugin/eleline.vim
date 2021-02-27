@@ -25,11 +25,11 @@ let s:jobs = {}
 
 function! ElelineBufnrWinnr() abort
   let l:bufnr = bufnr('%')
-  return '  W:'.winnr().'  B:'.l:bufnr.' '
+  return '  W:' . winnr() . '  ' . 'B:' . l:bufnr . ' '
 endfunction
 
 function! ElelineTotalBuf() abort
-  return '['.len(filter(range(1, bufnr('$')), 'buflisted(v:val)')).']'
+  return '[' . len(filter(range(1, bufnr('$')), 'buflisted(v:val)')) . ']'
 endfunction
 
 function! ElelinePaste() abort
@@ -42,7 +42,7 @@ function! ElelineFsize(f) abort
     return ''
   endif
   if l:size < 1024
-    let size = l:size.' B'
+    let size = l:size . ' B'
   elseif l:size < 1024*1024
     let size = printf('%.1f', l:size/1024.0) . 'K'
   elseif l:size < 1024*1024*1024
@@ -50,17 +50,17 @@ function! ElelineFsize(f) abort
   else
     let size = printf('%.1f', l:size/1024.0/1024.0/1024.0) . 'G'
   endif
-  return ' '.size.' '
+  return ' ' . size . ' '
 endfunction
 
 function! ElelineCurFname() abort
-  return &filetype ==# 'startify' ? '' : '  '.expand('%:p:t').' '
+  return &filetype ==# 'startify' ? '' : '  ' . expand('%:p:t') . ' '
 endfunction
 
 function! ElelineError() abort
   if exists('g:loaded_ale')
     let s:ale_counts = ale#statusline#Count(bufnr(''))
-    return s:ale_counts[0] == 0 ? '' : '•'.s:ale_counts[0].' '
+    return s:ale_counts[0] == 0 ? '' : '•' . s:ale_counts[0] . ' '
   endif
   return ''
 endfunction
@@ -68,7 +68,7 @@ endfunction
 function! ElelineWarning() abort
   if exists('g:loaded_ale')
     " Ensure ElelineWarning() is called after ElelineError() so that s:ale_counts can be reused.
-    return s:ale_counts[1] == 0 ? '' : '•'.s:ale_counts[1].' '
+    return s:ale_counts[1] == 0 ? '' : '•' . s:ale_counts[1] . ' '
   endif
   return ''
 endfunction
@@ -136,7 +136,7 @@ function! s:out_cb(channel, message) abort
       return
     endif
     let l:branch = substitute(a:message, '*', s:git_branch_star_substituted, '')
-    call s:SetGitBranch(s:cwd, l:branch.' ')
+    call s:SetGitBranch(s:cwd, l:branch . ' ')
     call remove(s:jobs, l:job_id)
   endif
 endfunction
@@ -151,7 +151,7 @@ function! s:on_exit(job_id, data, _event) dict abort
   let l:cur_branch = join(filter(self.stdout, 'v:val =~# "*"'))
   if !empty(l:cur_branch)
     let l:branch = substitute(l:cur_branch, '*', s:git_branch_star_substituted, '')
-    call s:SetGitBranch(self.cwd, l:branch.' ')
+    call s:SetGitBranch(self.cwd, l:branch . ' ')
   else
     let err = join(self.stderr)
     if !empty(err)
@@ -185,9 +185,9 @@ function! ElelineGitStatus() abort
     let l:summary = [0, 0, 0]
   endif
   if max(l:summary) > 0
-    return ' +'.l:summary[0].' ~'.l:summary[1].' -'.l:summary[2].' '
+    return ' +' . l:summary[0] . ' ~' . l:summary[1] . ' -' . l:summary[2] . ' '
   elseif !empty(get(b:, 'coc_git_status', ''))
-    return ' '.b:coc_git_status.' '
+    return ' ' . b:coc_git_status . ' '
   endif
   return ''
 endfunction
@@ -219,13 +219,38 @@ function! ElelineCoc() abort
     return ''
   endif
   if get(g:, 'coc_enabled', 0)
-    return coc#status().' '
+    return coc#status() . ' '
   endif
   return ''
 endfunction
 
+function! VimMode() abort
+  let status = {"n": "🅽  ","V":"🆅  ","v":"🆅  ","\<C-v>": "🆅  ","i":"🅸  ","R":"🆁  ","r":"🆁  ","s":"🆂  ","t":"🆃  ","c":"🅲  ","!":"SE "}
+  return '  ' . status[mode()]
+endfunction
+
 function! s:def(fn) abort
   return printf('%%#%s#%%{%s()}%%*', a:fn, a:fn)
+endfunction
+
+function! Scrollbar() abort
+  let l:scrollbar_chars = [
+  \  '▁', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'
+  \  ]
+
+  let l:current_line = line('.') - 1
+  let l:total_lines = line('$') - 1
+
+  if l:current_line == 0
+    let l:index = 0
+  elseif l:current_line == l:total_lines
+    let l:index = -1
+  else
+    let l:line_no_fraction = floor(l:current_line) / floor(l:total_lines)
+    let l:index = float2nr(l:line_no_fraction * len(l:scrollbar_chars))
+  endif
+
+  return l:scrollbar_chars[l:index]
 endfunction
 
 " https://github.com/liuchengxu/eleline.vim/wiki
@@ -242,24 +267,26 @@ function! s:StatusLine() abort
   let l:lcn = '%{ElelineLCN()}'
   let l:coc = '%{ElelineCoc()}'
   let l:lsp = ''
-  let l:vista = '%#ElelineVista#%{ElelineVista()}%*'
+  let l:vista = s:def('ElelineVista')
   if empty(get(b:, 'vista_nearest_method_or_function', '')) && has('nvim-0.5')
       let l:lsp = '%{ElelineNvimLsp()}'
       let l:vista = ''
   endif
-  let l:prefix = l:bufnr_winnr.l:paste
-  let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc.l:lsp.l:vista
+  let l:mode = s:def('VimMode')
+  let l:prefix = l:bufnr_winnr . l:paste
+  let l:common = l:curfname . l:branch . l:status . l:error . l:warning . l:tags . l:lcn . l:coc . l:lsp . l:vista
   if get(g:, 'eleline_slim', 0)
-    return l:prefix.'%<'.l:common
+    return l:prefix . '%<' . l:common
   endif
   let l:m_r_f = '%#Eleline7# %m%r%y %*'
-  let l:enc = '%#Eleline8# %{&fenc != "" ? &fenc : &enc}[%{&bomb ? ",BOM " : ""}'
-  let l:ff = '%{&ff}] %*'
-  let l:pos = '%#Eleline9# '.(s:font?"\ue0a1":'').'%3l/%L:%c%V'
-  let l:pct = '[%P] %*'
+  let l:enc = '%#Eleline8# %{&fenc != "" ? &fenc : &enc} ⏽ %{&bomb ? ",BOM " : ""}'
+  let l:ff = '%{&ff} %*'
+  let l:pos = '%#Eleline9# %l/%L:%c%V ⏽'
+  let l:scroll = s:def('Scrollbar')
+  let l:pct = ' %P ' . l:scroll . '%#Eleline9# %*'
   let l:fsize = '%#ElelineFsize#%{ElelineFsize(@%)}%*'
-  return l:prefix.l:tot.'%<'.l:common
-        \ .'%='.l:m_r_f.l:enc.l:ff.l:pos.l:pct.l:fsize
+  return l:mode . l:prefix . l:tot . '%<' . l:common
+        \ .'%=' . l:m_r_f . l:enc . l:ff . l:pos . l:pct . l:fsize
 endfunction
 
 let s:colors = {
@@ -328,24 +355,29 @@ function! s:hi(group, dark, light, ...) abort
 endfunction
 
 function! s:hi_statusline() abort
-  call s:hi('ElelineBufnrWinnr' , [232 , 178]    , [89 , '']  )
-  call s:hi('ElelineTotalBuf'   , [178 , s:bg+8] , [240 , ''] )
+
+  " Left
+  call s:hi('VimMode'           , [232 , 140]    , [232 , '']     , 'bold')
+  call s:hi('ElelineBufnrWinnr' , [232 , 178]    , [89  , ''])
+  call s:hi('ElelineTotalBuf'   , [178 , s:bg+8] , [240 , ''])
   call s:hi('ElelinePaste'      , [232 , 178]    , [232 , 178]    , 'bold')
-  call s:hi('ElelineCurFname'   , [171 , s:bg+4] , [171 , '']     , 'bold' )
-  call s:hi('ElelineGitBranch'  , [184 , s:bg+2] , [89  , '']     , 'bold' )
+  call s:hi('ElelineCurFname'   , [171 , s:bg+4] , [171 , '']     , 'bold')
+  call s:hi('ElelineGitBranch'  , [184 , s:bg+2] , [89  , '']     , 'bold')
   call s:hi('ElelineGitStatus'  , [208 , s:bg+2] , [89  , ''])
   call s:hi('ElelineError'      , [197 , s:bg+2] , [197 , ''])
   call s:hi('ElelineWarning'    , [214 , s:bg+2] , [214 , ''])
   call s:hi('ElelineVista'      , [149 , s:bg+2] , [149 , ''])
 
+  " Right
+  call s:hi('Eleline7'          , [249 , s:bg+3] , [237 , ''])
+  call s:hi('Eleline8'          , [250 , s:bg+4] , [238 , ''])
+  call s:hi('Eleline9'          , [251 , s:bg+5] , [239 , ''])
+  call s:hi('Scrollbar'         , [178 , 140]    , [178 , ''])
+  call s:hi('ElelineFsize'      , [252 , s:bg+6] , [235 , ''])
+
   if &background ==# 'dark'
     call s:hi('StatusLine' , [140 , s:bg+2], [140, ''] , 'none')
   endif
-
-  call s:hi('Eleline7'      , [249 , s:bg+3], [237, ''] )
-  call s:hi('Eleline8'      , [250 , s:bg+4], [238, ''] )
-  call s:hi('Eleline9'      , [251 , s:bg+5], [239, ''] )
-  call s:hi('ElelineFsize'  , [252 , s:bg+6] , [235 , ''] )
 endfunction
 
 function! s:InsertStatuslineColor(mode) abort
@@ -360,7 +392,7 @@ endfunction
 
 function! s:qf() abort
   let l:bufnr_winnr = s:def('ElelineBufnrWinnr')
-  let &l:statusline = l:bufnr_winnr."%{exists('w:quickfix_title')? ' '.w:quickfix_title : ''} %l/%L %p"
+  let &l:statusline = l:bufnr_winnr . "%{exists('w:quickfix_title')? ' '.w:quickfix_title : ''} %l/%L %p"
 endfunction
 
 " Note that the "%!" expression is evaluated in the context of the

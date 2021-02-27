@@ -185,7 +185,7 @@ function! ElelineGitStatus() abort
     let l:summary = [0, 0, 0]
   endif
   if max(l:summary) > 0
-    return ' +' . l:summary[0] . ' ~' . l:summary[1] . ' -' . l:summary[2] . ' '
+    return '  ' . l:summary[0] . '  ' . l:summary[1] . '  ' . l:summary[2] . ' '
   elseif !empty(get(b:, 'coc_git_status', ''))
     return ' ' . b:coc_git_status . ' '
   endif
@@ -229,10 +229,6 @@ function! VimMode() abort
   return '  ' . status[mode()]
 endfunction
 
-function! s:def(fn) abort
-  return printf('%%#%s#%%{%s()}%%*', a:fn, a:fn)
-endfunction
-
 function! Scrollbar() abort
   let l:scrollbar_chars = [
   \  '▁', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'
@@ -267,6 +263,10 @@ function! Devicon() abort
     endif
   endif
   return '  ' . l:icon
+endfunction
+
+function! s:def(fn) abort
+  return printf('%%#%s#%%{%s()}%%*', a:fn, a:fn)
 endfunction
 
 " https://github.com/liuchengxu/eleline.vim/wiki

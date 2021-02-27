@@ -400,7 +400,7 @@ endfunction
 
 function! s:InsertStatuslineColor(mode) abort
   if a:mode ==# 'i'
-    call s:hi('ElelineBufnrWinnr' , [251, s:bg+8] , [251, s:bg+8])
+    call s:hi('ElelineBufnrWinnr' , [232, 149] , [251, s:bg+8])
   elseif a:mode ==# 'r'
     call s:hi('ElelineBufnrWinnr' , [232, 160], [232, 160])
   else
@@ -432,9 +432,11 @@ endif
 augroup eleline
   autocmd!
   autocmd User GitGutter,Startified,LanguageClientStarted call s:SetStatusLine()
+
   " Change colors for insert mode
   autocmd InsertLeave * call s:hi('ElelineBufnrWinnr', [232, 178], [89, ''])
   autocmd InsertEnter,InsertChange * call s:InsertStatuslineColor(v:insertmode)
+
   autocmd BufWinEnter,ShellCmdPost,BufWritePost * call s:SetStatusLine()
   autocmd FileChangedShellPost,ColorScheme * call s:SetStatusLine()
   autocmd FileReadPre,ShellCmdPost,FileWritePost * call s:SetStatusLine()

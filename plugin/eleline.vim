@@ -54,7 +54,7 @@ function! ElelineFsize(f) abort
 endfunction
 
 function! ElelineCurFname() abort
-  return &filetype ==# 'startify' ? '' : '  ' . expand('%:p:t') . ' '
+  return &filetype ==# 'startify' ? ' ' : '  ' . expand('%:p:t') . ' '
 endfunction
 
 function! ElelineError() abort
@@ -253,11 +253,28 @@ function! Scrollbar() abort
   return l:scrollbar_chars[l:index]
 endfunction
 
+function! Devicon() abort
+  let l:icon = ''
+  if exists("*WebDevIconsGetFileTypeSymbol")
+    let l:icon = substitute(WebDevIconsGetFileTypeSymbol(), "\u00A0", '', '')
+  else
+    let l:file_name = expand("%:t")
+    let l:file_extension = expand("%:e")
+    if luaeval("require('nvim-web-devicons').get_icon")(l:file_name,l:file_extension) == v:null
+      let l:icon = ''
+    else
+      let l:icon = luaeval("require('nvim-web-devicons').get_icon")(l:file_name,l:file_extension)
+    endif
+  endif
+  return '  ' . l:icon
+endfunction
+
 " https://github.com/liuchengxu/eleline.vim/wiki
 function! s:StatusLine() abort
   let l:bufnr_winnr = s:def('ElelineBufnrWinnr')
   let l:paste = s:def('ElelinePaste')
   let l:tot = s:def('ElelineTotalBuf')
+  let l:devicon = s:def('Devicon')
   let l:curfname = s:def('ElelineCurFname')
   let l:branch = s:def('ElelineGitBranch')
   let l:status = s:def('ElelineGitStatus')
@@ -274,7 +291,7 @@ function! s:StatusLine() abort
   endif
   let l:mode = s:def('VimMode')
   let l:prefix = l:bufnr_winnr . l:paste
-  let l:common = l:curfname . l:branch . l:status . l:error . l:warning . l:tags . l:lcn . l:coc . l:lsp . l:vista
+  let l:common = l:devicon . l:curfname . l:branch . l:status . l:error . l:warning . l:tags . l:lcn . l:coc . l:lsp . l:vista
   if get(g:, 'eleline_slim', 0)
     return l:prefix . '%<' . l:common
   endif
@@ -361,6 +378,7 @@ function! s:hi_statusline() abort
   call s:hi('ElelineBufnrWinnr' , [232 , 178]    , [89  , ''])
   call s:hi('ElelineTotalBuf'   , [178 , s:bg+8] , [240 , ''])
   call s:hi('ElelinePaste'      , [232 , 178]    , [232 , 178]    , 'bold')
+  call s:hi('Devicon'           , [171 , s:bg+4] , [171 , ''])
   call s:hi('ElelineCurFname'   , [171 , s:bg+4] , [171 , '']     , 'bold')
   call s:hi('ElelineGitBranch'  , [184 , s:bg+2] , [89  , '']     , 'bold')
   call s:hi('ElelineGitStatus'  , [208 , s:bg+2] , [89  , ''])

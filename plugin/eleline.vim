@@ -18,7 +18,7 @@ let g:loaded_eleline = 1
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
-let s:font = get(g:, 'eleline_powerline_fonts', get(g:, 'airline_powerline_fonts', 0))
+let s:font = get(g:, 'eleline_powerline_fonts', 0)
 let s:gui = has('gui_running')
 let s:is_win = has('win32')
 let s:git_branch_cmd = add(s:is_win ? ['cmd', '/c'] : ['bash', '-c'], 'git branch')
@@ -26,14 +26,14 @@ let s:git_branch_cmd = add(s:is_win ? ['cmd', '/c'] : ['bash', '-c'], 'git branc
 if s:font
   let s:fn_icon = '  '
   let s:git_branch_symbol = '  '
-  let s:git_branch_star_substituted = '  '
+  let s:git_branch_star_substituted = '  '
   let s:logo = ' '
   let s:diff_icons = [' ', ' ', ' ']
   let s:separator = '⏽'
 else
   let s:fn_icon = ''
   let s:git_branch_symbol = ' Git:'
-  let s:git_branch_star_substituted = ' Git:'
+  let s:git_branch_star_substituted = '  Git:'
   let s:logo = '| '
   let s:diff_icons = ['+', '~', '-']
   let s:separator = '|'
@@ -243,33 +243,35 @@ endfunction
 
 function! VimMode() abort
   let status = {"n": "🅽  ","V":"🆅  ","v":"🆅  ","\<C-v>": "🆅  ","i":"🅸  ","R":"🆁  ","r":"🆁  ","s":"🆂  ","t":"🆃  ","c":"🅲  ","!":"SE "}
-  call s:ModeColor()
-  return '  ' . status[mode()]
+  let l:mode = mode()
+  call s:ChangeModeBg(l:mode)
+  return '  ' . status[l:mode]
 endfunction
 
 let s:mode = ''
-function! s:ModeColor() abort
-  let l:mode = mode()
-  if s:mode ==# l:mode
+function! s:ChangeModeBg(curmode)
+  if s:mode ==# a:curmode
     return
   endif
-  if l:mode ==# 'i'
-    call s:HiVimMode([232, 149], ['', ''])
-  elseif l:mode ==# 'c'
-    call s:HiVimMode([232, 208], ['', ''])
-  elseif l:mode =~? '\|v'
-    call s:HiVimMode([232, 32], ['', ''])
-  elseif l:mode ==# 't'
-    call s:HiVimMode([232, 184], ['', ''])
-  elseif l:mode ==# 'R'
-    call s:HiVimMode([232, 197], ['', ''])
+  let s:mode = a:curmode
+
+  if a:curmode ==# 'i'
+    call s:HiModeBg(149)
+  elseif a:curmode ==# 'c'
+    call s:HiModeBg(208)
+  elseif a:curmode =~? '\|v'
+    call s:HiModeBg(32)
+  elseif a:curmode ==# 't'
+    call s:HiModeBg(184)
+  elseif a:curmode ==# 'R'
+    call s:HiModeBg(197)
   else
-    call s:HiVimMode([232, 140], ['', ''])
+    call s:HiModeBg(140)
   endif
 endfunction
 
-function s:HiVimMode(dark, light) abort
-  call s:Hi('VimMode', a:dark, a:light, 'bold')
+function! s:HiModeBg(bg) abort
+  execute printf('hi VimMode ctermbg=%d guibg=%s', a:bg, s:colors[a:bg])
 endfunction
 
 function! Scrollbar() abort
@@ -393,10 +395,8 @@ endif
 " @light here is just a placeholder
 function! s:Hi(group, dark, light, ...) abort
   let [fg, bg] = a:dark
-  let ctermbg = bg
-  let guibg = s:colors[bg]
   execute printf('hi %s ctermfg=%d guifg=%s ctermbg=%d guibg=%s',
-        \ a:group, fg, s:colors[fg], ctermbg, guibg)
+        \ a:group, fg, s:colors[fg], bg, s:colors[bg])
   if a:0 == 1
     execute printf('hi %s cterm=%s gui=%s', a:group, a:1, a:1)
   endif

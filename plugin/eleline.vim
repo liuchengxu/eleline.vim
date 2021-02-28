@@ -19,16 +19,30 @@ let s:save_cpo = &cpoptions
 set cpoptions&vim
 
 let s:font = get(g:, 'eleline_powerline_fonts', get(g:, 'airline_powerline_fonts', 0))
-let s:fn_icon = s:font ? " \uf794 " : ''
 let s:gui = has('gui_running')
 let s:is_win = has('win32')
 let s:git_branch_cmd = add(s:is_win ? ['cmd', '/c'] : ['bash', '-c'], 'git branch')
-let s:git_branch_symbol = s:font ? " \ue0a0 " : ' Git:'
-let s:git_branch_star_substituted = s:font ? "  \ue0a0" : '  Git:'
+
+if s:font
+  let s:fn_icon = '  '
+  let s:git_branch_symbol = '  '
+  let s:git_branch_star_substituted = '  '
+  let s:logo = ' '
+  let s:diff_icons = [' ', ' ', ' ']
+  let s:separator = '⏽'
+else
+  let s:fn_icon = ''
+  let s:git_branch_symbol = ' Git:'
+  let s:git_branch_star_substituted = ' Git:'
+  let s:logo = '| '
+  let s:diff_icons = ['+', '~', '-']
+  let s:separator = '|'
+endif
+
 let s:jobs = {}
 
 function! ElelineBufnrWinnr() abort
-  return '  W:' . winnr() . '  ' . 'B:' . bufnr('%') . ' '
+  return '  W:' . winnr() . ' ' . s:logo . 'B:' . bufnr('%') . ' '
 endfunction
 
 function! ElelineTotalBuf() abort
@@ -188,7 +202,7 @@ function! ElelineGitStatus() abort
     let l:summary = [0, 0, 0]
   endif
   if max(l:summary) > 0
-    return '  ' . l:summary[0] . '  ' . l:summary[1] . '  ' . l:summary[2] . ' '
+    return ' ' . s:diff_icons[0] . l:summary[0] . ' ' . s:diff_icons[1] . l:summary[1] . ' ' . s:diff_icons[2] . l:summary[2] . ' '
   elseif !empty(get(b:, 'coc_git_status', ''))
     return ' ' . b:coc_git_status . ' '
   endif
@@ -304,7 +318,7 @@ function! s:StatusLine() abort
   let l:bufnr_winnr = s:DefStatuslineItem('ElelineBufnrWinnr')
   let l:paste = s:DefStatuslineItem('ElelinePaste')
   let l:tot = s:DefStatuslineItem('ElelineTotalBuf')
-  let l:devicon = s:DefStatuslineItem('Devicon')
+  let l:devicon = s:font ? s:DefStatuslineItem('Devicon') : ''
   let l:curfname = s:DefStatuslineItem('ElelineCurFname')
   let l:branch = s:DefStatuslineItem('ElelineGitBranch')
   let l:status = s:DefStatuslineItem('ElelineGitStatus')
@@ -325,10 +339,10 @@ function! s:StatusLine() abort
     return l:prefix . '%<' . l:common
   endif
   let l:m_r_f = '%#Eleline7# %m%r%y %*'
-  let l:enc = '%#Eleline8# %{&fenc != "" ? &fenc : &enc} ⏽ %{&bomb ? ",BOM " : ""}'
+  let l:enc = '%#Eleline8# %{&fenc != "" ? &fenc : &enc} ' . s:separator . ' %{&bomb ? ",BOM " : ""}'
   let l:ff = '%{&ff} %*'
-  let l:pos = '%#Eleline9# %l/%L:%c%V ⏽'
-  let l:scroll = s:DefStatuslineItem('Scrollbar')
+  let l:pos = '%#Eleline9# %l/%L:%c%V ' . s:separator
+  let l:scroll = s:font ? s:DefStatuslineItem('Scrollbar') : ''
   let l:pct = ' %P ' . l:scroll . '%#Eleline9# %*'
   let l:fsize = '%#ElelineFsize#%{ElelineFsize(@%)}%*'
   return l:prefix . l:tot . '%<' . l:common

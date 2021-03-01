@@ -53,7 +53,7 @@ function! ElelinePaste() abort
   return &paste ? 'PASTE ' : ''
 endfunction
 
-function! ElelineFsize(f) abort
+function! ElelineFileSize(f) abort
   let l:size = getfsize(expand(a:f))
   if l:size == 0 || l:size == -1 || l:size == -2
     return ''
@@ -241,7 +241,7 @@ function! ElelineCoc() abort
   return ''
 endfunction
 
-function! VimMode() abort
+function! ElelineVimMode() abort
   let status = {"n": "🅽  ","V":"🆅  ","v":"🆅  ","\<C-v>": "🆅  ","i":"🅸  ","R":"🆁  ","r":"🆁  ","s":"🆂  ","t":"🆃  ","c":"🅲  ","!":"SE "}
   let l:mode = mode()
   call s:ChangeModeBg(l:mode)
@@ -271,10 +271,10 @@ function! s:ChangeModeBg(curmode)
 endfunction
 
 function! s:HiModeBg(bg) abort
-  execute printf('hi VimMode ctermbg=%d guibg=%s', a:bg, s:colors[a:bg])
+  execute printf('hi ElelineVimMode ctermbg=%d guibg=%s', a:bg, s:colors[a:bg])
 endfunction
 
-function! Scrollbar() abort
+function! ElelineScrollbar() abort
   let l:scrollbar_chars = [
         \  '▁', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'
         \  ]
@@ -294,7 +294,7 @@ function! Scrollbar() abort
   return l:scrollbar_chars[l:index]
 endfunction
 
-function! Devicon() abort
+function! ElelineDevicon() abort
   let l:icon = ''
   if exists("*WebDevIconsGetFileTypeSymbol")
     let l:icon = substitute(WebDevIconsGetFileTypeSymbol(), "\u00A0", '', '')
@@ -316,11 +316,11 @@ endfunction
 
 " https://github.com/liuchengxu/eleline.vim/wiki
 function! s:StatusLine() abort
-  let l:mode = s:DefStatuslineItem('VimMode')
+  let l:mode = s:DefStatuslineItem('ElelineVimMode')
   let l:bufnr_winnr = s:DefStatuslineItem('ElelineBufnrWinnr')
   let l:paste = s:DefStatuslineItem('ElelinePaste')
   let l:tot = s:DefStatuslineItem('ElelineTotalBuf')
-  let l:devicon = s:font ? s:DefStatuslineItem('Devicon') : ''
+  let l:devicon = s:font ? s:DefStatuslineItem('ElelineDevicon') : ''
   let l:curfname = s:DefStatuslineItem('ElelineCurFname')
   let l:branch = s:DefStatuslineItem('ElelineGitBranch')
   let l:status = s:DefStatuslineItem('ElelineGitStatus')
@@ -340,13 +340,13 @@ function! s:StatusLine() abort
   if get(g:, 'eleline_slim', 0)
     return l:prefix . '%<' . l:common
   endif
-  let l:m_r_f = '%#Eleline7# %m%r%y %*'
-  let l:enc = '%#Eleline8# %{&fenc != "" ? &fenc : &enc} ' . s:separator . ' %{&bomb ? ",BOM " : ""}'
+  let l:m_r_f = '%#ElelineFileType# %m%r%y %*'
+  let l:enc = '%#ElelineFileFmtEnc# %{&fenc != "" ? &fenc : &enc} ' . s:separator . ' %{&bomb ? ",BOM " : ""}'
   let l:ff = '%{&ff} %*'
-  let l:pos = '%#Eleline9# %l/%L:%c%V ' . s:separator
-  let l:scroll = s:font ? s:DefStatuslineItem('Scrollbar') : ''
-  let l:pct = ' %P ' . l:scroll . '%#Eleline9# %*'
-  let l:fsize = '%#ElelineFsize#%{ElelineFsize(@%)}%*'
+  let l:pos = '%#ElelinePosPct# %l/%L:%c%V ' . s:separator
+  let l:scroll = s:font ? s:DefStatuslineItem('ElelineScrollbar') : ''
+  let l:pct = ' %P ' . l:scroll . '%#ElelinePosPct# %*'
+  let l:fsize = '%#ElelineFileSize#%{ElelineFileSize(@%)}%*'
   return l:prefix . l:tot . '%<' . l:common
         \ .'%=' . l:m_r_f . l:enc . l:ff . l:pos . l:pct . l:fsize
 endfunction
@@ -405,11 +405,11 @@ endfunction
 function! s:HiStatusline() abort
 
   " Left
-  call s:Hi('VimMode'           , [232 , 140]    , ['' , '']    , 'bold')
+  call s:Hi('ElelineVimMode'    , [232 , 140]    , ['' , '']    , 'bold')
   call s:Hi('ElelineBufnrWinnr' , [232 , 178]    , ['' , ''])
   call s:Hi('ElelineTotalBuf'   , [178 , s:bg+8] , ['' , ''])
   call s:Hi('ElelinePaste'      , [232 , 178]    , ['' , '']    , 'bold')
-  call s:Hi('Devicon'           , [171 , s:bg+4] , ['' , ''])
+  call s:Hi('ElelineDevicon'    , [171 , s:bg+4] , ['' , ''])
   call s:Hi('ElelineCurFname'   , [171 , s:bg+4] , ['' , '']    , 'bold')
   call s:Hi('ElelineGitBranch'  , [184 , s:bg+2] , ['' , '']    , 'bold')
   call s:Hi('ElelineGitStatus'  , [208 , s:bg+2] , ['' , ''])
@@ -418,11 +418,11 @@ function! s:HiStatusline() abort
   call s:Hi('ElelineVista'      , [149 , s:bg+2] , ['' , ''])
 
   " Right
-  call s:Hi('Eleline7'          , [249 , s:bg+3] , ['' , ''])
-  call s:Hi('Eleline8'          , [250 , s:bg+4] , ['' , ''])
-  call s:Hi('Eleline9'          , [251 , s:bg+5] , ['' , ''])
-  call s:Hi('Scrollbar'         , [178 , 140]    , ['' , ''])
-  call s:Hi('ElelineFsize'      , [252 , s:bg+6] , ['' , ''])
+  call s:Hi('ElelineFileType'   , [249 , s:bg+3] , ['' , ''])
+  call s:Hi('ElelineFileFmtEnc' , [250 , s:bg+4] , ['' , ''])
+  call s:Hi('ElelinePosPct'     , [251 , s:bg+5] , ['' , ''])
+  call s:Hi('ElelineScrollbar'  , [178 , 140]    , ['' , ''])
+  call s:Hi('ElelineFileSize'   , [252 , s:bg+6] , ['' , ''])
 
   call s:Hi('StatusLine'        , [140 , s:bg+2] , ['' , '']    , 'none')
 endfunction

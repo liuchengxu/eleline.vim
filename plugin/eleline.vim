@@ -23,6 +23,7 @@ let s:gui = has('gui_running')
 let s:is_win = has('win32')
 let s:git_branch_cmd = add(s:is_win ? ['cmd', '/c'] : ['bash', '-c'], 'git branch')
 
+" Icons here can be customized
 if s:font
   let s:fn_icon = '  '
   let s:git_branch_symbol = '  '
@@ -120,7 +121,7 @@ function! ElelineGitBranch(...) abort
   endif
 
   if exists('*job_start')
-    let job = job_start(s:git_branch_cmd, {'out_io': 'pipe', 'err_io':'null',  'out_cb': function('s:out_cb')})
+    let job = job_start(s:git_branch_cmd, {'out_io': 'pipe', 'err_io':'null',  'out_cb': function('s:OutHandler')})
     if job_status(job) ==# 'fail'
       return ''
     endif
@@ -132,7 +133,7 @@ function! ElelineGitBranch(...) abort
           \ 'cwd': root,
           \ 'stdout_buffered': v:true,
           \ 'stderr_buffered': v:true,
-          \ 'on_exit': function('s:on_exit')
+          \ 'on_exit': function('s:ExitHandler')
           \})
     if job_id == 0 || job_id == -1
       return ''
@@ -146,7 +147,7 @@ function! ElelineGitBranch(...) abort
   return ''
 endfunction
 
-function! s:out_cb(channel, message) abort
+function! s:OutHandler(channel, message) abort
   if a:message =~# '^* '
     let l:job_id = ch_info(a:channel)['id']
     if !has_key(s:jobs, l:job_id)
@@ -158,7 +159,7 @@ function! s:out_cb(channel, message) abort
   endif
 endfunction
 
-function! s:on_exit(job_id, data, _event) dict abort
+function! s:ExitHandler(job_id, data, _event) dict abort
   if !has_key(s:jobs, a:job_id) || !has_key(self, 'stdout')
     return
   endif
@@ -351,6 +352,7 @@ function! s:StatusLine() abort
         \ .'%=' . l:m_r_f . l:enc . l:ff . l:pos . l:pct . l:fsize
 endfunction
 
+" Colors here can be customized
 let s:colors = {
       \   140 : '#af87d7', 149 : '#99cc66', 160 : '#d70000',
       \   171 : '#d75fd7', 178 : '#ffbb7d', 184 : '#ffe920',
@@ -402,6 +404,7 @@ function! s:Hi(group, dark, light, ...) abort
   endif
 endfunction
 
+" The color of each item can be customized here
 function! s:HiStatusline() abort
 
   " Left

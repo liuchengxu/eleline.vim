@@ -208,19 +208,10 @@ function! ElelineFunction() abort
     let l:function = b:coc_current_function
   elseif !empty(get(b:, 'vista_nearest_method_or_function', ''))
     let l:function = b:vista_nearest_method_or_function
+  elseif has('nvim-0.5') && !s:is_tmp_file() && luaeval('#vim.lsp.buf_get_clients() > 0')
+    let l:function = luaeval("require('lsp-status').status()")
   endif
   return !empty(l:function) ? s:fn_icon.l:function : ''
-endfunction
-
-function! ElelineNvimLsp() abort
-  if s:is_tmp_file()
-    return ''
-  endif
-  if luaeval('#vim.lsp.buf_get_clients() > 0')
-    let l:lsp_status = luaeval("require('lsp-status').status()")
-    return empty(l:lsp_status) ? '' : s:fn_icon.l:lsp_status
-  endif
-  return ''
 endfunction
 
 function! ElelineCoc() abort
@@ -249,14 +240,9 @@ function! s:StatusLine() abort
   let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""} '
   let l:lcn = '%{ElelineLCN()}'
   let l:coc = '%{ElelineCoc()}'
-  let l:lsp = ''
   let l:func = '%#ElelineFunction#%{ElelineFunction()}%*'
-  if empty(get(b:, 'vista_nearest_method_or_function', '')) && empty(get(b:, 'coc_current_function', '')) && has('nvim-0.5')
-      let l:lsp = '%{ElelineNvimLsp()}'
-      let l:func = ''
-  endif
   let l:prefix = l:bufnr_winnr.l:paste
-  let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc.l:lsp.l:func
+  let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc.l:func
   if get(g:, 'eleline_slim', 0)
     return l:prefix.'%<'.l:common
   endif

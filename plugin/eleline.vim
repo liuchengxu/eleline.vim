@@ -87,6 +87,9 @@ function! ElelineGitBranch(...) abort
   if s:is_tmp_file()
     return ''
   endif
+  if exists('*FugitiveHead')
+    return s:git_branch_star_substituted . ' ' . FugitiveHead()
+  endif
   let reload = get(a:, 1, 0) == 1
   if exists('b:eleline_branch') && !reload
     return b:eleline_branch

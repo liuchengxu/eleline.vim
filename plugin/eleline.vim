@@ -202,19 +202,16 @@ function! ElelineLCN() abort
   return eleline#LanguageClientNeovim()
 endfunction
 
-function! ElelineVista() abort
-  return !empty(get(b:, 'vista_nearest_method_or_function', '')) ? s:fn_icon.b:vista_nearest_method_or_function : ''
-endfunction
-
-function! ElelineNvimLsp() abort
-  if s:is_tmp_file()
-    return ''
+function! ElelineFunction() abort
+  let l:function = ''
+  if get(g:, 'coc_enabled', 0) && !empty(get(b:,'coc_current_function',''))
+    let l:function = b:coc_current_function
+  elseif !empty(get(b:, 'vista_nearest_method_or_function', ''))
+    let l:function = b:vista_nearest_method_or_function
+  elseif has('nvim-0.5') && !s:is_tmp_file() && luaeval('#vim.lsp.buf_get_clients() > 0')
+    let l:function = luaeval("require('lsp-status').status()")
   endif
-  if luaeval('#vim.lsp.buf_get_clients() > 0')
-    let l:lsp_status = luaeval("require('lsp-status').status()")
-    return empty(l:lsp_status) ? '' : s:fn_icon.l:lsp_status
-  endif
-  return ''
+  return !empty(l:function) ? s:fn_icon.l:function : ''
 endfunction
 
 function! ElelineCoc() abort
@@ -243,14 +240,9 @@ function! s:StatusLine() abort
   let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""} '
   let l:lcn = '%{ElelineLCN()}'
   let l:coc = '%{ElelineCoc()}'
-  let l:lsp = ''
-  let l:vista = '%#ElelineVista#%{ElelineVista()}%*'
-  if empty(get(b:, 'vista_nearest_method_or_function', '')) && has('nvim-0.5')
-      let l:lsp = '%{ElelineNvimLsp()}'
-      let l:vista = ''
-  endif
+  let l:func = '%#ElelineFunction#%{ElelineFunction()}%*'
   let l:prefix = l:bufnr_winnr.l:paste
-  let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc.l:lsp.l:vista
+  let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc.l:func
   if get(g:, 'eleline_slim', 0)
     return l:prefix.'%<'.l:common
   endif
@@ -340,7 +332,7 @@ function! s:hi_statusline() abort
   call s:hi('ElelineGitStatus'  , [208 , s:bg+2] , [89  , ''])
   call s:hi('ElelineError'      , [197 , s:bg+2] , [197 , ''])
   call s:hi('ElelineWarning'    , [214 , s:bg+2] , [214 , ''])
-  call s:hi('ElelineVista'      , [149 , s:bg+2] , [149 , ''])
+  call s:hi('ElelineFunction'   , [149 , s:bg+2] , [149 , ''])
 
   if &background ==# 'dark'
     call s:hi('StatusLine' , [140 , s:bg+2], [140, ''] , 'none')

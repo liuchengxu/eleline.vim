@@ -22,6 +22,8 @@ This plugin can be installed with a variety of plugin managers, e.g., [vim-plug]
 
 ```vim
 Plug 'liuchengxu/eleline.vim'
+" Optional. If you use vim-fugitive and want a callback from it to update eleline.
+" autocmd User FugitiveChanged if exists("b:eleline_branch") | unlet b:eleline_branch | endif
 ```
 
 Don't forget to `set laststatus=2` to always display statusline.

@@ -14,6 +14,8 @@ let s:save_cpo = &cpoptions
 set cpoptions&vim
 
 let s:font = get(g:, 'eleline_powerline_fonts', get(g:, 'airline_powerline_fonts', 0))
+let s:syntastic_error_icon = s:font ? "\u2692" : "S>"
+let s:syntastic_warning_icon = s:font ? "\u270e" : "S>"
 let s:fn_icon = s:font ? get(g:, 'eleline_function_icon', " \uf794 ") : ''
 let s:gui = has('gui_running')
 let s:is_win = has('win32')
@@ -214,6 +216,23 @@ function! ElelineFunction() abort
   return !empty(l:function) ? s:fn_icon.l:function : ''
 endfunction
 
+function! ElelineSyntasticRaw() abort
+  if exists('b:syntastic_loclist') && !b:syntastic_loclist.isEmpty()
+    return SyntasticStatuslineFlag() . ' '
+  endif
+  return ''
+endfunction
+
+function! ElelineSyntastic(error) abort
+  if exists('b:syntastic_loclist') && !b:syntastic_loclist.isEmpty()
+    let l:count = a:error ? len(b:syntastic_loclist.errors()) : len(b:syntastic_loclist.warnings())
+    if l:count > 0
+      return (a:error ? s:syntastic_error_icon : s:syntastic_warning_icon) . ' ' . l:count . ' '
+    endif
+  endif
+  return ''
+endfunction
+
 function! ElelineCoc() abort
   if s:is_tmp_file()
     return ''
@@ -237,12 +256,17 @@ function! s:StatusLine() abort
   let l:status = s:def('ElelineGitStatus')
   let l:error = s:def('ElelineError')
   let l:warning = s:def('ElelineWarning')
+  if get(g:, 'eleline_syntastic_raw', 0)
+    let l:syntastic = '%{ElelineSyntasticRaw()}'
+  else
+    let l:syntastic = '%#ElelineError#%{ElelineSyntastic(1)}%*%#ElelineWarning#%{ElelineSyntastic(0)}%*'
+  endif
   let l:tags = '%{exists("b:gutentags_files") ? gutentags#statusline() : ""} '
   let l:lcn = '%{ElelineLCN()}'
   let l:coc = '%{ElelineCoc()}'
   let l:func = '%#ElelineFunction#%{ElelineFunction()}%*'
   let l:prefix = l:bufnr_winnr.l:paste
-  let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:tags.l:lcn.l:coc.l:func
+  let l:common = l:curfname.l:branch.l:status.l:error.l:warning.l:syntastic.l:tags.l:lcn.l:coc.l:func
   if get(g:, 'eleline_slim', 0)
     return l:prefix.'%<'.l:common
   endif

@@ -33,7 +33,7 @@ if s:font
   let s:fn_icon = ''
   let s:git_branch_symbol = ''
   let s:git_branch_star_substituted = ''
-  let s:logo = ''
+  let s:logo = ''
   let s:diff_icons = [' ', '柳', ' ']
   let s:separator = '⏽'
 else
@@ -47,8 +47,51 @@ endif
 
 let s:jobs = {}
 
+function! ElelineHead() abort
+  return '▎'
+endfunction
+
+function! ElelineLogo() abort
+  return ' ' . s:logo . '  '
+endfunction
+
+function! ElelineVimMode() abort
+  let status = {"n": "🅽  ", "V": "🆅  ", "v": "🆅  ", "\<C-v>": "🆅  ", "i": "🅸  ", "R": "🆁  ", "r": "🆁  ", "s": "🆂  ", "t": "🆃  ", "c": "🅲  ", "!": "SE "}
+  let l:mode = mode()
+  # Change the background color of the Mode segment and the foreground color of the Logo segment
+  call s:ChangeColor(l:mode)
+  return '  ' . status[l:mode]
+endfunction
+
+let s:mode = ''
+function! s:ChangeColor(curmode)
+  if s:mode ==# a:curmode
+    return
+  endif
+  let s:mode = a:curmode
+
+  if a:curmode ==# 'i'
+    call s:HiModeLogo(149)
+  elseif a:curmode ==# 'c'
+    call s:HiModeLogo(208)
+  elseif a:curmode =~? '\|v'
+    call s:HiModeLogo(32)
+  elseif a:curmode ==# 't'
+    call s:HiModeLogo(184)
+  elseif a:curmode ==# 'R'
+    call s:HiModeLogo(197)
+  else
+    call s:HiModeLogo(140)
+  endif
+endfunction
+
+function! s:HiModeLogo(bg) abort
+  execute printf('hi ElelineVimMode ctermbg=%d guibg=%s', a:bg, s:colors[a:bg])
+  execute printf('hi ElelineLogo ctermfg=%d guifg=%s', a:bg, s:colors[a:bg])
+endfunction
+
 function! ElelineBufnrWinnr() abort
-  return '  W:' . winnr() . ' ' . s:logo . ' B:' . bufnr('%') . ' '
+  return '  W:' . winnr() . ' ' . s:separator . ' B:' . bufnr('%') . ' '
 endfunction
 
 function! ElelineTotalBuf() abort
@@ -226,19 +269,16 @@ function! ElelineLCN() abort
   return eleline#LanguageClientNeovim()
 endfunction
 
-function! ElelineVista() abort
-  return !empty(get(b:, 'vista_nearest_method_or_function', '')) ? '  ' . s:fn_icon . ' ' . b:vista_nearest_method_or_function : ''
-endfunction
-
-function! ElelineNvimLsp() abort
-  if s:IsTmpFile()
-    return ''
+function! ElelineFunction() abort
+  let l:function = ''
+  if get(g:, 'coc_enabled', 0) && !empty(get(b:,'coc_current_function',''))
+    let l:function = b:coc_current_function
+  elseif !empty(get(b:, 'vista_nearest_method_or_function', ''))
+    let l:function = '[' . s:fn_icon . '] ' . b:vista_nearest_method_or_function
+  elseif has('nvim-0.5') && !s:IsTmpFile() && luaeval('#vim.lsp.buf_get_clients() > 0')
+    let l:function = s:fn_icon . ' ' . luaeval("require('lsp-status').status()")
   endif
-  if luaeval('#vim.lsp.buf_get_clients() > 0')
-    let l:lsp_status = luaeval("require('lsp-status').status()")
-    return empty(l:lsp_status) ? '' : '  ' . s:fn_icon . ' ' . l:lsp_status
-  endif
-  return ''
+  return !empty(l:function) ? l:function : ''
 endfunction
 
 function! ElelineCoc() abort
@@ -246,42 +286,9 @@ function! ElelineCoc() abort
     return ''
   endif
   if get(g:, 'coc_enabled', 0)
-    return coc#status() . ' '
+    return '  ' . coc#status() . ' '
   endif
   return ''
-endfunction
-
-function! ElelineVimMode() abort
-  let status = {"n": "🅽  ", "V": "🆅  ", "v": "🆅  ", "\<C-v>": "🆅  ", "i": "🅸  ", "R": "🆁  ", "r": "🆁  ", "s": "🆂  ", "t": "🆃  ", "c": "🅲  ", "!": "SE "}
-  let l:mode = mode()
-  call s:ChangeModeBg(l:mode)
-  return '  ' . status[l:mode]
-endfunction
-
-let s:mode = ''
-function! s:ChangeModeBg(curmode)
-  if s:mode ==# a:curmode
-    return
-  endif
-  let s:mode = a:curmode
-
-  if a:curmode ==# 'i'
-    call s:HiModeBg(149)
-  elseif a:curmode ==# 'c'
-    call s:HiModeBg(208)
-  elseif a:curmode =~? '\|v'
-    call s:HiModeBg(32)
-  elseif a:curmode ==# 't'
-    call s:HiModeBg(184)
-  elseif a:curmode ==# 'R'
-    call s:HiModeBg(197)
-  else
-    call s:HiModeBg(140)
-  endif
-endfunction
-
-function! s:HiModeBg(bg) abort
-  execute printf('hi ElelineVimMode ctermbg=%d guibg=%s', a:bg, s:colors[a:bg])
 endfunction
 
 function! ElelineScrollbar() abort
@@ -327,6 +334,8 @@ endfunction
 function! s:StatusLine() abort
 
   " Item candidates for the left section
+  let l:head = s:DefStatuslineItem('ElelineHead')
+  let l:logo = s:DefStatuslineItem('ElelineLogo')
   let l:mode = s:DefStatuslineItem('ElelineVimMode')
   let l:bufnr_winnr = s:DefStatuslineItem('ElelineBufnrWinnr')
   let l:paste = s:DefStatuslineItem('ElelinePaste')
@@ -340,8 +349,7 @@ function! s:StatusLine() abort
   let l:tags = s:DefStatuslineItem('ElelineTag')
   " let l:lcn = s:DefStatuslineItem('ElelineLCN')
   let l:coc = s:DefStatuslineItem('ElelineCoc')
-  " let l:lsp = s:DefStatuslineItem('ElelineNvimLsp')
-  let l:vista = s:DefStatuslineItem('ElelineVista')
+  let l:func = s:DefStatuslineItem('ElelineFunction')
 
   " Item candidates for the right section
   let l:m_r_f = '%#ElelineFileType# %m%r%y %*'
@@ -353,8 +361,8 @@ function! s:StatusLine() abort
   let l:fsize = '%#ElelineFileSize#%{ElelineFileSize(@%)}%*'
 
   " Assemble the items you need
-  let l:prefix = l:mode . l:bufnr_winnr . l:paste
-  let l:common = l:devicon . l:curfname . l:branch . l:status . l:tags . l:coc . l:vista
+  let l:prefix = l:head . l:logo . l:mode . l:bufnr_winnr . l:paste
+  let l:common = l:devicon . l:curfname . l:branch . l:status . l:tags . l:coc . l:func
   if get(g:, 'eleline_slim', 0)
     return l:prefix . '%<' . l:common
   endif
@@ -369,7 +377,8 @@ let s:colors = {
       \   171 : '#d75fd7', 178 : '#ffbb7d', 184 : '#ffe920',
       \   208 : '#ff8700', 232 : '#333300', 197 : '#cc0033',
       \   214 : '#ffff66', 124 : '#af3a03', 172 : '#b57614',
-      \   32  : '#3a81c3', 89  : '#6c3163',
+      \   32  : '#3a81c3', 89  : '#6c3163', 900 : '#ec5f67',
+      \   901 : '#51afef',
       \
       \   235 : '#262626', 236 : '#303030', 237 : '#3a3a3a',
       \   238 : '#444444', 239 : '#4e4e4e', 240 : '#585858',
@@ -419,6 +428,8 @@ endfunction
 function! s:HiStatusline() abort
 
   " Left section
+  call s:Hi('ElelineHead'       , [901 , s:bg] , ['' , '']    , 'none')
+  call s:Hi('ElelineLogo'       , [140 , s:bg] , ['' , '']    , 'none')
   call s:Hi('ElelineVimMode'    , [232 , 140]    , ['' , '']    , 'bold')
   call s:Hi('ElelineBufnrWinnr' , [232 , 178]    , ['' , ''])
   call s:Hi('ElelineTotalBuf'   , [178 , s:bg+8] , ['' , ''])
@@ -433,7 +444,7 @@ function! s:HiStatusline() abort
   " call s:Hi('ElelineLCN'        , [197 , s:bg+2] , ['' , ''])
   call s:Hi('ElelineCoc'        , [197 , s:bg+2] , ['' , ''])
   " call s:Hi('ElelineNvimLsp'    , [197 , s:bg+2] , ['' , ''])
-  call s:Hi('ElelineVista'      , [149 , s:bg+2] , ['' , ''])
+  call s:Hi('ElelineFunction'   , [149 , s:bg+2] , ['' , ''])
 
   " Right section
   call s:Hi('ElelineFileType'   , [249 , s:bg+3] , ['' , ''])

@@ -58,7 +58,7 @@ endfunction
 function! ElelineVimMode() abort
   let status = {"n": "🅽  ", "V": "🆅  ", "v": "🆅  ", "\<C-v>": "🆅  ", "i": "🅸  ", "R": "🆁  ", "r": "🆁  ", "s": "🆂  ", "t": "🆃  ", "c": "🅲  ", "!": "SE "}
   let l:mode = mode()
-  # Change the background color of the Mode segment and the foreground color of the Logo segment
+  " Change the background color of the Mode segment and the foreground color of the Logo segment
   call s:ChangeColor(l:mode)
   return '  ' . status[l:mode]
 endfunction

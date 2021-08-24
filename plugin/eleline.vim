@@ -140,7 +140,7 @@ function! ElelineWarning() abort
 endfunction
 
 function! ElelineTag() abort
-  return exists("b:gutentags_files") ? '  ' . gutentags#statusline() . ' ' : ''
+  return exists("b:gutentags_files") ? gutentags#statusline() . ' ' : ''
 endfunction
 
 function! s:IsTmpFile() abort
@@ -193,7 +193,7 @@ function! ElelineGitBranch(...) abort
     let s:jobs[job_id] = root
   elseif exists('g:loaded_fugitive')
     let l:head = fugitive#head()
-    return empty(l:head) ? '' : '  ' . s:git_branch_symbol . ' ' . l:head . ' '
+    return empty(l:head) ? '' : ' ' . s:git_branch_symbol . ' ' . l:head
   endif
 
   return ''
@@ -255,7 +255,7 @@ function! ElelineGitStatus() abort
     let l:summary = [0, 0, 0]
   endif
   if max(l:summary) > 0
-    return '  ' . s:diff_icons[0] . l:summary[0] . ' ' . s:diff_icons[1] . l:summary[1] . ' ' . s:diff_icons[2] . l:summary[2] . ' '
+    return s:diff_icons[0] . l:summary[0] . ' ' . s:diff_icons[1] . l:summary[1] . ' ' . s:diff_icons[2] . l:summary[2]
   elseif !empty(get(b:, 'coc_git_status', ''))
     return ' ' . b:coc_git_status . ' '
   endif
@@ -286,7 +286,7 @@ function! ElelineCoc() abort
     return ''
   endif
   if get(g:, 'coc_enabled', 0)
-    return '  ' . coc#status() . ' '
+    return coc#status() . '  '
   endif
   return ''
 endfunction
@@ -442,7 +442,7 @@ function! s:HiStatusline() abort
   " call s:Hi('ElelineWarning'    , [214 , s:bg+2] , ['' , ''])
   call s:Hi('ElelineTag'        , [149 , s:bg+2] , ['' , ''])
   " call s:Hi('ElelineLCN'        , [197 , s:bg+2] , ['' , ''])
-  call s:Hi('ElelineCoc'        , [197 , s:bg+2] , ['' , ''])
+  call s:Hi('ElelineCoc'        , [901 , s:bg+2] , ['' , ''])
   " call s:Hi('ElelineNvimLsp'    , [197 , s:bg+2] , ['' , ''])
   call s:Hi('ElelineFunction'   , [149 , s:bg+2] , ['' , ''])
 

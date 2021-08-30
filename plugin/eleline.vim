@@ -1,97 +1,84 @@
-"=============================================================================
+"=================================================
 " Filename: eleline.vim
 " Author: Liu-Cheng Xu
 " Fork: Rocky (@yanzhang0219)
 " URL: https://github.com/yanzhang0219/eleline.vim
 " License: MIT License
-" =============================================================================
-
-" Customization: To add an item
-" 1. first write a function to return what you want to display on the status bar
-" 2. create a highlight group for it to color it, see HiStatusline() below
-" 3. add it to the status line, see StatusLine() below
+" ================================================
 
 " TODO: Adapt for the light themes
 
 scriptencoding utf-8
-if exists('g:loaded_eleline') || v:version < 700
-  finish
-endif
 
-let g:loaded_eleline = 1
+" Variables {{{
 
-let s:save_cpo = &cpoptions
-set cpoptions&vim
-
-let s:font = get(g:, 'eleline_powerline_fonts', 0)
-let s:gui = has('gui_running')
+let s:font = get(g:, 'eleline_nerdfont', 0)
 let s:is_win = has('win32')
 let s:git_branch_cmd = add(s:is_win ? ['cmd', '/c'] : ['bash', '-c'], 'git branch')
 
-" Icons here can be customized
 if s:font
-  let s:fn_icon = ''
+  let s:head = '▎'
+  let s:logo = ' '
   let s:git_branch_symbol = ''
   let s:git_branch_star_substituted = ''
-  let s:logo = ''
   let s:diff_icons = [' ', '柳', ' ']
-  let s:separator = '⏽'
+  let s:fn_icon = ''
+  let s:separator = ''
+  let s:mode_icon = {"n": "🅽  ", "V": "🆅  ", "v": "🆅  ", "\<C-v>": "🆅  ", "i": "🅸  ", "R": "🆁  ", "s": "🆂  ", "t": "🆃  ", "c": "🅲  ", "!": "SE "}
 else
-  let s:fn_icon = ''
+  let s:head = ''
+  let s:logo = 'YZ'
   let s:git_branch_symbol = 'Git:'
   let s:git_branch_star_substituted = 'Git:'
-  let s:logo = '|'
   let s:diff_icons = ['+', '~', '-']
+  let s:fn_icon = 'f'
   let s:separator = '|'
+  let s:mode_icon = {"n": "N ", "V": "V ", "v": "V ", "\<C-v>": "V ", "i": "I ", "R": "R ", "s": "S ", "t": "T ", "c": "C ", "!": "SE "}
 endif
+
+let s:mode_name = {"n": "Normal", "V": "Visual", "v": "Visual", "\<C-v>": "Visual", "i": "Insert", "R": "Replace", "s": "Select", "t": "Term", "c": "Command", "!": "Shell"}
+
+let s:colors = {
+      \   32  : '#3a81c3', 37:   '#0AAEB3', 39  : '#51afef',
+      \   89  : '#6c3163',
+      \   124 : '#af3a03', 140 : '#af87d7', 149 : '#99cc66',
+      \   160 : '#d70000', 171 : '#d75fd7', 172 : '#b57614',
+      \   178 : '#ffbb7d', 184 : '#ffe920', 197 : '#cc0033',
+      \   208 : '#ff8700', 214 : '#ffff66', 232 : '#333300',
+      \
+      \   235 : '#262626', 236 : '#303030', 237 : '#3a3a3a',
+      \   238 : '#444444', 239 : '#4e4e4e', 240 : '#585858',
+      \   241 : '#606060', 242 : '#666666', 243 : '#767676',
+      \   244 : '#808080', 245 : '#8a8a8a', 246 : '#949494',
+      \   247 : '#9e9e9e', 248 : '#a8a8a8', 249 : '#b2b2b2',
+      \   250 : '#bcbcbc', 251 : '#c6c6c6', 252 : '#d0d0d0',
+      \   253 : '#dadada', 254 : '#e4e4e4', 255 : '#eeeeee',
+      \ }
 
 let s:jobs = {}
 
+" }}}
+
+" Functions for each item {{{
+
 function! ElelineHead() abort
-  return '▎'
+  return s:head
 endfunction
 
 function! ElelineLogo() abort
-  return ' ' . s:logo . '  '
+  return ' ' . s:logo . ' '
 endfunction
 
-function! ElelineVimMode() abort
-  let status = {"n": "🅽  ", "V": "🆅  ", "v": "🆅  ", "\<C-v>": "🆅  ", "i": "🅸  ", "R": "🆁  ", "r": "🆁  ", "s": "🆂  ", "t": "🆃  ", "c": "🅲  ", "!": "SE "}
+function! ElelineMode() abort
   let l:mode = mode()
-  " Change the background color of the Mode segment and the foreground color of the Logo segment
-  call s:ChangeColor(l:mode)
-  return '  ' . status[l:mode]
-endfunction
-
-let s:mode = ''
-function! s:ChangeColor(curmode)
-  if s:mode ==# a:curmode
-    return
-  endif
-  let s:mode = a:curmode
-
-  if a:curmode ==# 'i'
-    call s:HiModeLogo(149)
-  elseif a:curmode ==# 'c'
-    call s:HiModeLogo(208)
-  elseif a:curmode =~? '\|v'
-    call s:HiModeLogo(32)
-  elseif a:curmode ==# 't'
-    call s:HiModeLogo(184)
-  elseif a:curmode ==# 'R'
-    call s:HiModeLogo(197)
-  else
-    call s:HiModeLogo(140)
-  endif
-endfunction
-
-function! s:HiModeLogo(bg) abort
-  execute printf('hi ElelineVimMode ctermbg=%d guibg=%s', a:bg, s:colors[a:bg])
-  execute printf('hi ElelineLogo ctermfg=%d guifg=%s', a:bg, s:colors[a:bg])
+  " Change color for different mode
+  execute 'hi! link ElelineLogo ElelineLogo' . s:mode_name[l:mode]
+  execute 'hi! link ElelineMode ElelineMode' . s:mode_name[l:mode]
+  return '  ' . s:mode_icon[l:mode]
 endfunction
 
 function! ElelineBufnrWinnr() abort
-  return '  W:' . winnr() . ' ' . s:separator . ' B:' . bufnr('%') . ' '
+  return '  W:' . winnr() . '  ' . 'B:' . bufnr('%') . ' '
 endfunction
 
 function! ElelineTotalBuf() abort
@@ -102,45 +89,24 @@ function! ElelinePaste() abort
   return &paste ? 'PASTE ' : ''
 endfunction
 
-function! ElelineFileSize(f) abort
-  let l:size = getfsize(expand(a:f))
-  if l:size == 0 || l:size == -1 || l:size == -2
-    return ''
-  endif
-  if l:size < 1024
-    let size = l:size . ' B'
-  elseif l:size < 1024 * 1024
-    let size = printf('%.1f', l:size/1024.0) . 'K'
-  elseif l:size < 1024 * 1024 * 1024
-    let size = printf('%.1f', l:size/1024.0/1024.0) . 'M'
+function! ElelineDevicon() abort
+  let l:icon = ''
+  if exists("*WebDevIconsGetFileTypeSymbol")
+    let l:icon = substitute(WebDevIconsGetFileTypeSymbol(), "\u00A0", '', '')
   else
-    let size = printf('%.1f', l:size/1024.0/1024.0/1024.0) . 'G'
+    let l:file_name = expand("%:t")
+    let l:file_extension = expand("%:e")
+    if luaeval("require('nvim-web-devicons').get_icon")(l:file_name,l:file_extension) == v:null
+      let l:icon = ' '
+    else
+      let l:icon = luaeval("require('nvim-web-devicons').get_icon")(l:file_name,l:file_extension)
+    endif
   endif
-  return ' ' . size . ' '
+  return '  ' . l:icon
 endfunction
 
 function! ElelineCurFname() abort
   return &filetype ==# 'startify' ? ' ' : '  ' . expand('%:p:t') . ' '
-endfunction
-
-function! ElelineError() abort
-  if exists('g:loaded_ale')
-    let s:ale_counts = ale#statusline#Count(bufnr(''))
-    return s:ale_counts[0] == 0 ? '' : '•' . s:ale_counts[0] . ' '
-  endif
-  return ''
-endfunction
-
-function! ElelineWarning() abort
-  if exists('g:loaded_ale')
-    " Ensure ElelineWarning() is called after ElelineError() so that s:ale_counts can be reused.
-    return s:ale_counts[1] == 0 ? '' : '•' . s:ale_counts[1] . ' '
-  endif
-  return ''
-endfunction
-
-function! ElelineTag() abort
-  return exists("b:gutentags_files") ? gutentags#statusline() . ' ' : ''
 endfunction
 
 function! s:IsTmpFile() abort
@@ -149,7 +115,7 @@ function! s:IsTmpFile() abort
         \ || expand('%:p') =~# '^/tmp'
 endfunction
 
-" Reference: https://github.com/chemzqm/vimrc/blob/master/statusline.vim
+" Probe git branch asynchronously
 function! ElelineGitBranch(...) abort
   if s:IsTmpFile()
     return ''
@@ -262,11 +228,18 @@ function! ElelineGitStatus() abort
   return ''
 endfunction
 
-function! ElelineLCN() abort
-  if !exists('g:LanguageClient_loaded')
+function! ElelineTag() abort
+  return exists("b:gutentags_files") ? gutentags#statusline() . ' ' : ''
+endfunction
+
+function! ElelineCoc() abort
+  if s:IsTmpFile()
     return ''
   endif
-  return eleline#LanguageClientNeovim()
+  if get(g:, 'coc_enabled', 0)
+    return coc#status() . '  '
+  endif
+  return ''
 endfunction
 
 function! ElelineFunction() abort
@@ -281,14 +254,21 @@ function! ElelineFunction() abort
   return !empty(l:function) ? l:function : ''
 endfunction
 
-function! ElelineCoc() abort
-  if s:IsTmpFile()
+function! ElelineFileSize(f) abort
+  let l:size = getfsize(expand(a:f))
+  if l:size == 0 || l:size == -1 || l:size == -2
     return ''
   endif
-  if get(g:, 'coc_enabled', 0)
-    return coc#status() . '  '
+  if l:size < 1024
+    let size = l:size . ' B'
+  elseif l:size < 1024 * 1024
+    let size = printf('%.1f', l:size/1024.0) . 'K'
+  elseif l:size < 1024 * 1024 * 1024
+    let size = printf('%.1f', l:size/1024.0/1024.0) . 'M'
+  else
+    let size = printf('%.1f', l:size/1024.0/1024.0/1024.0) . 'G'
   endif
-  return ''
+  return ' ' . size . ' '
 endfunction
 
 function! ElelineScrollbar() abort
@@ -311,83 +291,9 @@ function! ElelineScrollbar() abort
   return l:scrollbar_chars[l:index]
 endfunction
 
-function! ElelineDevicon() abort
-  let l:icon = ''
-  if exists("*WebDevIconsGetFileTypeSymbol")
-    let l:icon = substitute(WebDevIconsGetFileTypeSymbol(), "\u00A0", '', '')
-  else
-    let l:file_name = expand("%:t")
-    let l:file_extension = expand("%:e")
-    if luaeval("require('nvim-web-devicons').get_icon")(l:file_name,l:file_extension) == v:null
-      let l:icon = ''
-    else
-      let l:icon = luaeval("require('nvim-web-devicons').get_icon")(l:file_name,l:file_extension)
-    endif
-  endif
-  return '  ' . l:icon
-endfunction
+" }}}
 
-function! s:DefStatuslineItem(fn) abort
-  return printf('%%#%s#%%{%s()}%%*', a:fn, a:fn)
-endfunction
-
-function! s:StatusLine() abort
-
-  " Item candidates for the left section
-  let l:head = s:DefStatuslineItem('ElelineHead')
-  let l:logo = s:DefStatuslineItem('ElelineLogo')
-  let l:mode = s:DefStatuslineItem('ElelineVimMode')
-  let l:bufnr_winnr = s:DefStatuslineItem('ElelineBufnrWinnr')
-  let l:paste = s:DefStatuslineItem('ElelinePaste')
-  let l:tot = s:DefStatuslineItem('ElelineTotalBuf')
-  let l:devicon = s:font ? s:DefStatuslineItem('ElelineDevicon') : ''
-  let l:curfname = s:DefStatuslineItem('ElelineCurFname')
-  let l:branch = s:DefStatuslineItem('ElelineGitBranch')
-  let l:status = s:DefStatuslineItem('ElelineGitStatus')
-  " let l:error = s:DefStatuslineItem('ElelineError')
-  " let l:warning = s:DefStatuslineItem('ElelineWarning')
-  let l:tags = s:DefStatuslineItem('ElelineTag')
-  " let l:lcn = s:DefStatuslineItem('ElelineLCN')
-  let l:coc = s:DefStatuslineItem('ElelineCoc')
-  let l:func = s:DefStatuslineItem('ElelineFunction')
-
-  " Item candidates for the right section
-  let l:m_r_f = '%#ElelineFileType# %m%r%y %*'
-  let l:enc = '%#ElelineFileFmtEnc# %{&fenc != "" ? &fenc : &enc} ' . s:separator . ' %{&bomb ? ",BOM " : ""}'
-  let l:ff = '%{&ff} %*'
-  let l:pos = '%#ElelinePosPct# %l/%L:%c%V ' . s:separator
-  let l:scroll = s:font ? s:DefStatuslineItem('ElelineScrollbar') : ''
-  let l:pct = ' %P ' . l:scroll . '%#ElelinePosPct# %*'
-  let l:fsize = '%#ElelineFileSize#%{ElelineFileSize(@%)}%*'
-
-  " Assemble the items you need
-  let l:prefix = l:head . l:logo . l:mode . l:bufnr_winnr . l:paste
-  let l:common = l:devicon . l:curfname . l:branch . l:status . l:tags . l:coc . l:func
-  if get(g:, 'eleline_slim', 0)
-    return l:prefix . '%<' . l:common
-  endif
-  let l:right = l:m_r_f . l:enc . l:ff . l:pos . l:pct . l:fsize
-
-  return l:prefix . l:tot . '%<' . l:common .'%=' . l:right
-endfunction
-
-" Colors here can be customized
-let s:colors = {
-      \   140 : '#af87d7', 149 : '#99cc66', 160 : '#d70000',
-      \   171 : '#d75fd7', 178 : '#ffbb7d', 184 : '#ffe920',
-      \   208 : '#ff8700', 232 : '#333300', 197 : '#cc0033',
-      \   214 : '#ffff66', 124 : '#af3a03', 172 : '#b57614',
-      \   32  : '#3a81c3', 89  : '#6c3163', 900 : '#ec5f67',
-      \   901 : '#51afef',
-      \
-      \   235 : '#262626', 236 : '#303030', 237 : '#3a3a3a',
-      \   238 : '#444444', 239 : '#4e4e4e', 240 : '#585858',
-      \   241 : '#606060', 242 : '#666666', 243 : '#767676',
-      \   244 : '#808080', 245 : '#8a8a8a', 246 : '#949494',
-      \   247 : '#9e9e9e', 248 : '#a8a8a8', 249 : '#b2b2b2',
-      \   250 : '#bcbcbc', 251 : '#c6c6c6', 252 : '#d0d0d0',
-      \   253 : '#dadada', 254 : '#e4e4e4', 255 : '#eeeeee',
-      \ }
+" Colorize {{{
 
 function! s:Extract(group, what, ...) abort
   if a:0 == 1
@@ -397,21 +303,24 @@ function! s:Extract(group, what, ...) abort
   endif
 endfunction
 
-if !exists('g:eleline_background')
-  let s:normal_bg = s:Extract('Normal', 'bg', 'cterm')
-  if s:normal_bg >= 233 && s:normal_bg <= 243
-    let s:bg = s:normal_bg
+" Set the background color
+function! s:SetBg() abort
+  if !exists('g:eleline_background')
+    let s:normal_bg = s:Extract('Normal', 'bg', 'cterm')
+    if s:normal_bg >= 233 && s:normal_bg <= 243
+      let s:bg = s:normal_bg
+    else
+      let s:bg = 235
+    endif
   else
+    let s:bg = g:eleline_background
+  endif
+
+  " Don't change in gui mode
+  if has('termguicolors') && &termguicolors
     let s:bg = 235
   endif
-else
-  let s:bg = g:eleline_background
-endif
-
-" Don't change in gui mode
-if has('termguicolors') && &termguicolors
-  let s:bg = 235
-endif
+endfunction
 
 " TODO: Adapt for the light themes
 " @light here is just a placeholder
@@ -424,36 +333,91 @@ function! s:Hi(group, dark, light, ...) abort
   endif
 endfunction
 
-" Create highlight group for each item
+" Create highlight groups
 function! s:HiStatusline() abort
-
   " Left section
-  call s:Hi('ElelineHead'       , [901 , s:bg] , ['' , '']    , 'none')
-  call s:Hi('ElelineLogo'       , [140 , s:bg] , ['' , '']    , 'none')
-  call s:Hi('ElelineVimMode'    , [232 , 140]    , ['' , '']    , 'bold')
-  call s:Hi('ElelineBufnrWinnr' , [232 , 178]    , ['' , ''])
-  call s:Hi('ElelineTotalBuf'   , [178 , s:bg+8] , ['' , ''])
-  call s:Hi('ElelinePaste'      , [232 , 178]    , ['' , '']    , 'bold')
-  call s:Hi('ElelineDevicon'    , [171 , s:bg+4] , ['' , ''])
-  call s:Hi('ElelineCurFname'   , [171 , s:bg+4] , ['' , '']    , 'bold')
-  call s:Hi('ElelineGitBranch'  , [184 , s:bg+2] , ['' , '']    , 'bold')
-  call s:Hi('ElelineGitStatus'  , [208 , s:bg+2] , ['' , ''])
-  " call s:Hi('ElelineError'      , [197 , s:bg+2] , ['' , ''])
-  " call s:Hi('ElelineWarning'    , [214 , s:bg+2] , ['' , ''])
-  call s:Hi('ElelineTag'        , [149 , s:bg+2] , ['' , ''])
-  " call s:Hi('ElelineLCN'        , [197 , s:bg+2] , ['' , ''])
-  call s:Hi('ElelineCoc'        , [901 , s:bg+2] , ['' , ''])
-  " call s:Hi('ElelineNvimLsp'    , [197 , s:bg+2] , ['' , ''])
-  call s:Hi('ElelineFunction'   , [149 , s:bg+2] , ['' , ''])
+  call s:Hi('ElelineHead'        , [39  , s:bg+2] , ['' , ''])
+  call s:Hi('ElelineLogo'        , [140 , s:bg+2] , ['' , ''])
+  call s:Hi('ElelineMode'        , [232 , 140]    , ['' , '']    , 'bold')
+  call s:Hi('ElelineBufnrWinnr'  , [232 , 178]    , ['' , ''])
+  call s:Hi('ElelineTotalBuf'    , [178 , s:bg+7] , ['' , ''])
+  call s:Hi('ElelinePaste'       , [232 , 178]    , ['' , '']    , 'bold')
+  call s:Hi('ElelineDevicon'     , [171 , s:bg+4] , ['' , ''])
+  call s:Hi('ElelineCurFname'    , [171 , s:bg+4] , ['' , '']    , 'bold')
+  call s:Hi('ElelineGitBranch'   , [184 , s:bg+2] , ['' , '']    , 'bold')
+  call s:Hi('ElelineGitStatus'   , [208 , s:bg+2] , ['' , ''])
+  call s:Hi('ElelineTag'         , [149 , s:bg+2] , ['' , ''])
+  call s:Hi('ElelineCoc'         , [39  , s:bg+2] , ['' , ''])
+  call s:Hi('ElelineFunction'    , [149 , s:bg+2] , ['' , ''])
+
+  call s:Hi('ElelineLogoNormal'  , [140 , s:bg+2] , ['' , ''])
+  call s:Hi('ElelineModeNormal'  , [232 , 140]    , ['' , '']    , 'bold')
+  call s:Hi('ElelineLogoInsert'  , [149 , s:bg+2] , ['' , ''])
+  call s:Hi('ElelineModeInsert'  , [232 , 149]    , ['' , '']    , 'bold')
+  call s:Hi('ElelineLogoVisual'  , [32 , s:bg+2]  , ['' , ''])
+  call s:Hi('ElelineModeVisual'  , [232 , 32]     , ['' , '']    , 'bold')
+  call s:Hi('ElelineLogoCommand' , [208 , s:bg+2] , ['' , ''])
+  call s:Hi('ElelineModeCommand' , [232 , 208]    , ['' , '']    , 'bold')
+  call s:Hi('ElelineLogoReplace' , [197 , s:bg+2] , ['' , ''])
+  call s:Hi('ElelineModeReplace' , [232 , 197]    , ['' , '']    , 'bold')
+  call s:Hi('ElelineLogoSelect'  , [37  , s:bg+2] , ['' , ''])
+  call s:Hi('ElelineModeSelect'  , [232 , 37]     , ['' , '']    , 'bold')
+  call s:Hi('ElelineLogoTerm'    , [184 , s:bg+2] , ['' , ''])
+  call s:Hi('ElelineModeTerm'    , [232 , 184]    , ['' , '']    , 'bold')
+  call s:Hi('ElelineLogoShell'   , [171 , s:bg+2] , ['' , ''])
+  call s:Hi('ElelineModeShell'   , [232 , 171]    , ['' , '']    , 'bold')
 
   " Right section
-  call s:Hi('ElelineFileType'   , [249 , s:bg+3] , ['' , ''])
-  call s:Hi('ElelineFileFmtEnc' , [250 , s:bg+4] , ['' , ''])
-  call s:Hi('ElelinePosPct'     , [251 , s:bg+5] , ['' , ''])
-  call s:Hi('ElelineScrollbar'  , [178 , 140]    , ['' , ''])
-  call s:Hi('ElelineFileSize'   , [252 , s:bg+6] , ['' , ''])
+  call s:Hi('ElelineFileType'    , [249 , s:bg+3] , ['' , ''])
+  call s:Hi('ElelineFileFmtEnc'  , [250 , s:bg+5] , ['' , ''])
+  call s:Hi('ElelineFileSize'    , [251 , s:bg+7] , ['' , ''])
+  call s:Hi('ElelinePosPct'      , [252 , s:bg+9] , ['' , ''])
+  call s:Hi('ElelineScrollbar'   , [39  , 184]    , ['' , ''])
 
-  call s:Hi('StatusLine'        , [140 , s:bg+2] , ['' , '']    , 'none')
+  " Statusline itseft
+  call s:Hi('StatusLine'         , [140 , s:bg+2] , ['' , ''])
+endfunction
+
+" }}}
+
+" Set statusline {{{
+
+function! s:DefStatuslineItem(fn) abort
+  return printf('%%#%s#%%{%s()}%%*', a:fn, a:fn)
+endfunction
+
+function! s:GenerateStatusLine() abort
+
+  " Item candidates for the left section
+  let l:head = s:DefStatuslineItem('ElelineHead')
+  let l:logo = s:DefStatuslineItem('ElelineLogo')
+  let l:mode = s:DefStatuslineItem('ElelineMode')
+  let l:bufnr_winnr = s:DefStatuslineItem('ElelineBufnrWinnr')
+  let l:paste = s:DefStatuslineItem('ElelinePaste')
+  let l:tot = s:DefStatuslineItem('ElelineTotalBuf')
+  let l:devicon = s:font ? s:DefStatuslineItem('ElelineDevicon') : ''
+  let l:curfname = s:DefStatuslineItem('ElelineCurFname')
+  let l:branch = s:DefStatuslineItem('ElelineGitBranch')
+  let l:status = s:DefStatuslineItem('ElelineGitStatus')
+  let l:tags = s:DefStatuslineItem('ElelineTag')
+  let l:coc = s:DefStatuslineItem('ElelineCoc')
+  let l:func = s:DefStatuslineItem('ElelineFunction')
+
+  " Item candidates for the right section
+  let l:m_r_f = '%#ElelineFileType# %m%r%y %*'
+  let l:ff = '%#ElelineFileFmtEnc# %{&ff == "unix" ? " ": &ff} '
+  let l:enc = '%{toupper(&fenc != "" ? &fenc : &enc)}%{&bomb ? "[BOM]" : ""} %*'
+  let l:fsize = '%#ElelineFileSize#%{ElelineFileSize(@%)}%*'
+  let l:pos = '%#ElelinePosPct#  %l/%L:%03c ' . s:separator
+  let l:scroll = s:font ? s:DefStatuslineItem('ElelineScrollbar') : ''
+  let l:pct = ' %P ' . l:scroll . '%#ElelinePosPct#%*'
+
+  " Assemble the items you want to display
+  let l:prefix = l:head . l:logo . l:mode . l:bufnr_winnr . l:paste . l:tot
+  let l:common = l:devicon . l:curfname . l:branch . l:status . l:tags . l:coc . l:func
+  let l:right = l:m_r_f . l:ff . l:enc . fsize . l:pos . l:pct
+
+  return l:prefix . '%<' . l:common .'%=' . l:right
 endfunction
 
 function! s:SetQuickFixStatusline() abort
@@ -461,30 +425,32 @@ function! s:SetQuickFixStatusline() abort
   let &l:statusline = l:bufnr_winnr . "%{exists('w:quickfix_title')? ' '.w:quickfix_title : ''} %l/%L %p"
 endfunction
 
-" Note that the "%!" expression is evaluated in the context of the
-" current window and buffer, while %{} items are evaluated in the
-" context of the window that the statusline belongs to.
 function! s:SetStatusline(...) abort
   call ElelineGitBranch(1)
-  let &l:statusline = s:StatusLine()
-  " User-defined highlightings shoule be put after colorscheme command.
+  let &l:statusline = s:GenerateStatusLine()
+endfunction
+
+function! s:StatusLineInit(...) abort
+  call s:SetBg()
+  call s:SetStatusline()
   call s:HiStatusline()
 endfunction
 
 if exists('*timer_start')
-  call timer_start(100, function('s:SetStatusline'))
+  call timer_start(100, function('s:StatusLineInit'))
 else
-  call s:SetStatusline()
+  call s:StatusLineInit()
 endif
 
 augroup eleline
   autocmd!
-  autocmd User GitGutter,Startified,LanguageClientStarted call s:SetStatusline()
+  autocmd User GitGutter,Startified call s:SetStatusline()
   autocmd BufWinEnter,ShellCmdPost,BufWritePost * call s:SetStatusline()
   autocmd FileChangedShellPost,ColorScheme * call s:SetStatusline()
   autocmd FileReadPre,ShellCmdPost,FileWritePost * call s:SetStatusline()
   autocmd FileType qf call s:SetQuickFixStatusline()
 augroup END
 
-let &cpoptions = s:save_cpo
-unlet s:save_cpo
+" }}}
+
+" vim:set et sw=2 ts=2 fdm=marker

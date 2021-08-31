@@ -304,25 +304,6 @@ function! s:Extract(group, what, ...) abort
   endif
 endfunction
 
-" Set the background color
-function! s:SetBg() abort
-  if !exists('g:eleline_background')
-    let s:normal_bg = s:Extract('Normal', 'bg', 'cterm')
-    if s:normal_bg >= 233 && s:normal_bg <= 243
-      let s:bg = s:normal_bg
-    else
-      let s:bg = 235
-    endif
-  else
-    let s:bg = g:eleline_background
-  endif
-
-  " Don't change in gui mode
-  if has('termguicolors') && &termguicolors
-    let s:bg = 235
-  endif
-endfunction
-
 " TODO: Adapt for the light themes
 " @light here is just a placeholder
 function! s:Hi(group, dark, light, ...) abort
@@ -381,7 +362,7 @@ endfunction
 
 " }}}
 
-" Set statusline {{{
+" Generate statusline {{{
 
 function! s:DefStatuslineItem(fn) abort
   return printf('%%#%s#%%{%s()}%%*', a:fn, a:fn)
@@ -421,21 +402,35 @@ function! s:GenerateStatusLine() abort
   return l:prefix . '%<' . l:common .'%=' . l:right
 endfunction
 
+" }}}
+
+" Set statusline {{{
+
 function! s:SetStatusline(...) abort
   call ElelineGitBranch(1)
   let &l:statusline = s:GenerateStatusLine()
-endfunction
-
-function! s:StatusLineInit(...) abort
-  call s:SetBg()
-  call s:SetStatusline()
   call s:HiStatusline()
 endfunction
 
-if exists('*timer_start')
-  call timer_start(100, function('s:StatusLineInit'))
+" Set the background color
+if !exists('g:eleline_background')
+  let s:normal_bg = s:Extract('Normal', 'bg', 'cterm')
+  if s:normal_bg >= 233 && s:normal_bg <= 243
+    let s:bg = s:normal_bg
+  else
+    let s:bg = 235
+  endif
 else
-  call s:StatusLineInit()
+  let s:bg = g:eleline_background
+endif
+if has('termguicolors') && &termguicolors
+  let s:bg = 235
+endif
+
+if exists('*timer_start')
+  call timer_start(100, function('s:SetStatusline'))
+else
+  call s:SetStatusline()
 endif
 
 augroup eleline

@@ -24,7 +24,7 @@ if s:font
   let s:diff_icons = [' ', '柳', ' ']
   let s:fn_icon = ''
   let s:separator = ''
-  let s:mode_icon = {"n": "🅽  ", "V": "🆅  ", "v": "🆅  ", "\<C-v>": "🆅  ", "i": "🅸  ", "R": "🆁  ", "s": "🆂  ", "t": "🆃  ", "c": "🅲  ", "!": "SE "}
+  let s:mode_icon = {"n": "🅽 ", "V": "🆅 ", "v": "🆅 ", "\<C-v>": "🆅 ", "i": "🅸 ", "R": "🆁 ", "s": "🆂 ", "t": "🆃 ", "c": "🅲 ", "!": "SE"}
 else
   let s:head = ''
   let s:logo = 'YZ'
@@ -33,7 +33,7 @@ else
   let s:diff_icons = ['+', '~', '-']
   let s:fn_icon = 'f'
   let s:separator = '|'
-  let s:mode_icon = {"n": "N ", "V": "V ", "v": "V ", "\<C-v>": "V ", "i": "I ", "R": "R ", "s": "S ", "t": "T ", "c": "C ", "!": "SE "}
+  let s:mode_icon = {"n": "N", "V": "V", "v": "V", "\<C-v>": "V", "i": "I", "R": "R", "s": "S", "t": "T", "c": "C", "!": "SE"}
 endif
 
 let s:mode_name = {"n": "Normal", "V": "Visual", "v": "Visual", "\<C-v>": "Visual", "i": "Insert", "R": "Replace", "s": "Select", "t": "Term", "c": "Command", "!": "Shell"}
@@ -74,7 +74,7 @@ function! ElelineMode() abort
   " Change color for different mode
   execute 'hi! link ElelineLogo ElelineLogo' . s:mode_name[l:mode]
   execute 'hi! link ElelineMode ElelineMode' . s:mode_name[l:mode]
-  return '  ' . s:mode_icon[l:mode]
+  return '  ' . s:mode_icon[l:mode] . ' '
 endfunction
 
 function! ElelineBufnrWinnr() abort
@@ -102,11 +102,11 @@ function! ElelineDevicon() abort
       let l:icon = luaeval("require('nvim-web-devicons').get_icon")(l:file_name,l:file_extension)
     endif
   endif
-  return '  ' . l:icon
+  return '  ' . l:icon . ' '
 endfunction
 
 function! ElelineCurFname() abort
-  return &filetype ==# 'startify' ? ' ' : '  ' . expand('%:p:t') . ' '
+  return &filetype ==# 'startify' ? '' : ' ' . expand('%:p:t') . ' '
 endfunction
 
 function! s:IsTmpFile() abort
@@ -221,7 +221,7 @@ function! ElelineGitStatus() abort
     let l:summary = [0, 0, 0]
   endif
   if max(l:summary) > 0
-    return s:diff_icons[0] . l:summary[0] . ' ' . s:diff_icons[1] . l:summary[1] . ' ' . s:diff_icons[2] . l:summary[2]
+    return ' ' . s:diff_icons[0] . l:summary[0] . ' ' . s:diff_icons[1] . l:summary[1] . ' ' . s:diff_icons[2] . l:summary[2]
   elseif !empty(get(b:, 'coc_git_status', ''))
     return ' ' . b:coc_git_status . ' '
   endif
@@ -229,7 +229,7 @@ function! ElelineGitStatus() abort
 endfunction
 
 function! ElelineTag() abort
-  return exists("b:gutentags_files") ? gutentags#statusline() : ''
+  return exists("b:gutentags_files") ? ' ' . gutentags#statusline() . ' ' : ''
 endfunction
 
 function! ElelineCoc() abort
@@ -237,7 +237,8 @@ function! ElelineCoc() abort
     return ''
   endif
   if get(g:, 'coc_enabled', 0)
-    return '  ' . coc#status()
+    let l:coc_status = coc#status()
+    return l:coc_status ==# '' ? '' : '  ' . l:coc_status . ' '
   endif
   return ''
 endfunction
@@ -245,13 +246,13 @@ endfunction
 function! ElelineFunction() abort
   let l:function = ''
   if get(g:, 'coc_enabled', 0) && !empty(get(b:,'coc_current_function',''))
-    let l:function = b:coc_current_function
+    let l:function = ' '. b:coc_current_function
   elseif !empty(get(b:, 'vista_nearest_method_or_function', ''))
-    let l:function = '[' . s:fn_icon . '] ' . b:vista_nearest_method_or_function
+    let l:function = ' [' . s:fn_icon . '] ' . b:vista_nearest_method_or_function
   elseif has('nvim-0.5') && !s:IsTmpFile() && luaeval('#vim.lsp.buf_get_clients() > 0')
-    let l:function = s:fn_icon . ' ' . luaeval("require('lsp-status').status()")
+    let l:function = ' ' . s:fn_icon . ' ' . luaeval("require('lsp-status').status()")
   endif
-  return !empty(l:function) ? '   ' . l:function : ''
+  return !empty(l:function) ? ' ' . l:function . ' ' : ''
 endfunction
 
 function! ElelineFileSize(f) abort

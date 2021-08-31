@@ -229,7 +229,7 @@ function! ElelineGitStatus() abort
 endfunction
 
 function! ElelineTag() abort
-  return exists("b:gutentags_files") ? gutentags#statusline() . ' ' : ''
+  return exists("b:gutentags_files") ? gutentags#statusline() : ''
 endfunction
 
 function! ElelineCoc() abort
@@ -237,7 +237,7 @@ function! ElelineCoc() abort
     return ''
   endif
   if get(g:, 'coc_enabled', 0)
-    return coc#status() . '  '
+    return '  ' . coc#status()
   endif
   return ''
 endfunction
@@ -251,7 +251,7 @@ function! ElelineFunction() abort
   elseif has('nvim-0.5') && !s:IsTmpFile() && luaeval('#vim.lsp.buf_get_clients() > 0')
     let l:function = s:fn_icon . ' ' . luaeval("require('lsp-status').status()")
   endif
-  return !empty(l:function) ? l:function : ''
+  return !empty(l:function) ? '   ' . l:function : ''
 endfunction
 
 function! ElelineFileSize(f) abort
@@ -420,11 +420,6 @@ function! s:GenerateStatusLine() abort
   return l:prefix . '%<' . l:common .'%=' . l:right
 endfunction
 
-function! s:SetQuickFixStatusline() abort
-  let l:bufnr_winnr = s:DefStatuslineItem('ElelineBufnrWinnr')
-  let &l:statusline = l:bufnr_winnr . "%{exists('w:quickfix_title')? ' '.w:quickfix_title : ''} %l/%L %p"
-endfunction
-
 function! s:SetStatusline(...) abort
   call ElelineGitBranch(1)
   let &l:statusline = s:GenerateStatusLine()
@@ -448,7 +443,6 @@ augroup eleline
   autocmd BufWinEnter,ShellCmdPost,BufWritePost * call s:SetStatusline()
   autocmd FileChangedShellPost,ColorScheme * call s:SetStatusline()
   autocmd FileReadPre,ShellCmdPost,FileWritePost * call s:SetStatusline()
-  autocmd FileType qf call s:SetQuickFixStatusline()
 augroup END
 
 " }}}

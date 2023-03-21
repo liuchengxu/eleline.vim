@@ -208,7 +208,7 @@ function! ElelineFunction() abort
     let l:function = b:coc_current_function
   elseif !empty(get(b:, 'vista_nearest_method_or_function', ''))
     let l:function = b:vista_nearest_method_or_function
-  elseif has('nvim-0.5') && !s:is_tmp_file() && luaeval('#vim.lsp.buf_get_clients() > 0')
+  elseif has('nvim-0.5') && !s:is_tmp_file() && luaeval('pcall(require, "lsp-status")') && luaeval('#vim.lsp.buf_get_clients() > 0')
     let l:function = luaeval("require('lsp-status').status()")
   endif
   return !empty(l:function) ? s:fn_icon.l:function : ''

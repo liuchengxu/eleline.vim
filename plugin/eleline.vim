@@ -14,7 +14,7 @@ let s:save_cpo = &cpoptions
 set cpoptions&vim
 
 let s:font = get(g:, 'eleline_powerline_fonts', get(g:, 'airline_powerline_fonts', 0))
-let s:fn_icon = s:font ? get(g:, 'eleline_function_icon', " \uf794 ") : ''
+let s:fn_icon = s:font ? get(g:, 'eleline_function_icon', " \Uf0295 ") : ''
 let s:gui = has('gui_running')
 let s:is_win = has('win32')
 let s:git_branch_cmd = add(s:is_win ? ['cmd', '/c'] : ['bash', '-c'], 'git branch')

@@ -7,6 +7,7 @@ Currently supported plugins:
 - [ale](https://github.com/w0rp/ale)
 - [coc.nvim](https://github.com/neoclide/coc.nvim)
 - [vista.vim](https://github.com/liuchengxu/vista.vim)
+- [vim-clap](https://github.com/liuchengxu/vim-clap)
 - [vim-fugitive](https://github.com/tpope/vim-fugitive)
 - [vim-signify](https://github.com/mhinz/vim-signify)
 - [vim-gitgutter](https://github.com/airblade/vim-gitgutter)

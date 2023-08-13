@@ -204,7 +204,14 @@ endfunction
 
 function! ElelineFunction() abort
   let l:function = ''
-  if get(g:, 'coc_enabled', 0) && !empty(get(b:,'coc_current_function',''))
+  if !empty(get(b:, 'clap_current_symbol', ''))
+    if empty(b:clap_current_symbol.scope)
+      return printf('%s %s', b:clap_current_symbol.kind_icon, b:clap_current_symbol.name)
+    else
+      let scope = b:clap_current_symbol.scope
+      return printf('%s %s > %s %s', scope.scope_kind_icon, scope.name, b:clap_current_symbol.kind_icon, b:clap_current_symbol.name)
+    endif
+  elseif get(g:, 'coc_enabled', 0) && !empty(get(b:,'coc_current_function',''))
     let l:function = b:coc_current_function
   elseif !empty(get(b:, 'vista_nearest_method_or_function', ''))
     let l:function = b:vista_nearest_method_or_function

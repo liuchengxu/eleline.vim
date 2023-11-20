@@ -61,17 +61,23 @@ function! ElelineCurFname() abort
 endfunction
 
 function! ElelineError() abort
-  if exists('g:loaded_ale')
+  if exists('g:loaded_ale') && get(g:, 'ale_enabled', 1)
     let s:ale_counts = ale#statusline#Count(bufnr(''))
     return s:ale_counts[0] == 0 ? '' : '•'.s:ale_counts[0].' '
+  elseif exists('b:clap_diagnostics')
+      let error_count = b:clap_diagnostics.error
+    return error_count == 0 ? '' : '•'.error_count.' '
   endif
   return ''
 endfunction
 
 function! ElelineWarning() abort
-  if exists('g:loaded_ale')
+  if exists('g:loaded_ale') && get(g:, 'ale_enabled', 1)
     " Ensure ElelineWarning() is called after ElelineError() so that s:ale_counts can be reused.
     return s:ale_counts[1] == 0 ? '' : '•'.s:ale_counts[1].' '
+  elseif exists('b:clap_diagnostics')
+    let warn_count = b:clap_diagnostics.warn
+    return warn_count == 0 ? '' : '•'.warn_count.' '
   endif
   return ''
 endfunction
@@ -371,7 +377,7 @@ endfunction
 function! s:SetStatusLine(...) abort
   call ElelineGitBranch(1)
   let &l:statusline = s:StatusLine()
-  " User-defined highlightings shoule be put after colorscheme command.
+  " User-defined highlightings should be put after colorscheme command.
   call s:hi_statusline()
 endfunction
 

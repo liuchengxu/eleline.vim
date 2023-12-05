@@ -188,6 +188,8 @@ endfunction
 function! ElelineGitStatus() abort
   if exists('b:sy.stats')
     let l:summary = b:sy.stats
+  elseif exists('b:clap_git.summary')
+    let l:summary = b:clap_git.summary
   elseif exists('b:gitgutter.summary')
     let l:summary = b:gitgutter.summary
   else
